@@ -4,46 +4,25 @@ import { Request, Response } from 'express';
 export class UserController {
     public static async getPeople(request: Request, response: Response) {
         try {
+            //! PENDING TO MODIFY THIS METHOD
             const test = await UserModel.getAllPeople();
-            console.log(test);
-            response.status(200).json(test[0]);
+            response.status(200).json(test[0].existingUser);
         }
         catch(err) {
             response.status(500).json(err);
         }
     }
+
+    public static async createNewUser(request: Request, response: Response) {
+        const {name, username, email, password, userType} = request.body;
+        try {
+            const test = await UserModel.createUser(name, username, email, password, userType);
+            response.status(200).json({ message: test });
+        }
+        catch(err: any) {
+            response.status(500).json(err.message);
+        }
+    }
 }
-// const UserController = {
-//     getPeople: (resquest: Request, response: Response) => {
-//         const test = UserModel.getAllPeople();
-//         console.log(test);
-        // UserModel.getAllPeople((err: Error, user: any) => {
-        //     if(err) response.status(500).json({ error: err.message });
-        //     response.status(200).json(user);
-        // });
-        // response.status(200).send('<h1>test</h1>');
-            // response.status(200).json(test);
-        // response.json(UserModel.getAllPeople());
-    // },
-
-    // newUser: (request: Request, response: Response) => {
-    //     UserModel.createPerson(request.body.name, (err: Error, user) => {
-    //         if(err) return response.status(500).json({ error: err.message });
-
-    //         const message = UserController.createUser(user.insertId, request);
-    //         console.log(message)
-    //     });
-    // },
-
-    // createUser: (idPerson: number, request: Request) => {
-    //     const { username, email, password, userType } = request.body;
-    //     if(!!username || !!email || !!password || !!userType || !!idPerson) return new Error('All fields are required.');
-
-    //     UserModel.createUser(username, email, password, userType, idPerson, (err: Error, newUser: any) => {
-    //         if(err) return new Error(err.message);
-    //         return { message: 'Usuario creado exitósamente', newUser };
-    //     });
-    // }
-// }
 
 export default UserController;
