@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 
-export class EncryptionService {
+export default class EncryptionService {
     private static readonly saltRounds: number = 10;
     
     public static async encryptPassword(password: string): Promise<string> {

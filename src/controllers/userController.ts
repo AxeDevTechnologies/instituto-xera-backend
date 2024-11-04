@@ -1,13 +1,13 @@
 import UserModel from "../model/userModel";
 import { Request, Response } from 'express';
-import { EncryptionService } from "../services/EncryptionService";
+import EncryptionService from "../services/EncryptionService";
 
-export class UserController {
-    public static async getPeople(request: Request, response: Response) {
+export default class UserController {
+    public static async getUser(request: Request, response: Response) {
         try {
             //! PENDING TO MODIFY THIS METHOD
-            const test = await UserModel.getAllPeople();
-            response.status(200).json(test[0].existingUser);
+            const test = await UserModel.getUser(request.body.username);
+            response.status(200).json(test);
         }
         catch(err) {
             response.status(500).json(err);
@@ -27,5 +27,3 @@ export class UserController {
         }
     }
 }
-
-export default UserController;

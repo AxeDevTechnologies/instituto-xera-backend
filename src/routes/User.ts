@@ -3,7 +3,7 @@ import UserController from '../controllers/userController';
 
 const router: Router = Router();
 
-router.get('/all-users', UserController.getPeople);
+router.get('/get-user', UserController.getUser);
 router.post('/create-user', UserController.createNewUser);
 
 

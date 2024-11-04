@@ -1,9 +1,9 @@
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import pool from '../db';
 
-export class ModelUser {
-    public static async getAllPeople(): Promise<RowDataPacket[]> {
-        const [result] = await pool.query<RowDataPacket[]>('SELECT * FROM Person');
+export default class UserModel {
+    public static async getUser(username: string): Promise<RowDataPacket[]> {
+        const [result] = await pool.query<RowDataPacket[]>('SELECT * FROM User WHERE username = ?', [username]);
         return result;
     }
 
@@ -37,5 +37,3 @@ export class ModelUser {
         }
     }
 }
-
-export default ModelUser;
