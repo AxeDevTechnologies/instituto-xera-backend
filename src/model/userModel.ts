@@ -2,27 +2,27 @@ import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import pool from '../db';
 
 export default class UserModel {
-    public static async getUser(username: string): Promise<RowDataPacket[]> {
-        const [result] = await pool.query<RowDataPacket[]>('SELECT * FROM User WHERE username = ?', [username]);
+    public static async getUser(email: string): Promise<RowDataPacket[]> {
+        const [result] = await pool.query<RowDataPacket[]>('SELECT * FROM User WHERE email = ?', [email]);
         return result;
     }
 
-    public static async createUser(name: string, username: string, email: string, password: string, userType: string): Promise<string> {
+    public static async createUser(name: string, email: string, password: string, userType: string): Promise<string> {
         const connection = await pool.getConnection();
         try {
             await connection.beginTransaction();
 
-            const [existingUser] = await connection.query<RowDataPacket[]>('SELECT EXISTS (SELECT 1 FROM User WHERE username = ?) AS existingUser', [username]);
+            const [existingUser] = await connection.query<RowDataPacket[]>('SELECT EXISTS (SELECT 1 FROM User WHERE email = ?) AS existingUser', [email]);
             if(existingUser[0].existingUser) {
                 await connection.rollback();
-                throw new Error('User already exists');
+                throw new Error('Email already exists');
             }
 
             const [newPerson] = await connection.query<ResultSetHeader>('INSERT INTO Person (name) VALUES (?)', [name]);
 
             const idPerson: number = newPerson.insertId;
 
-            await connection.query('INSERT INTO User (username, password, email, userType, id_person) VALUES (?, ?, ?, ?, ?)', [username, password, email, userType, idPerson]);
+            await connection.query('INSERT INTO User (email, password, userType, id_person) VALUES (?, ?, ?, ?)', [email, password, userType, idPerson]);
 
             await connection.commit();
 

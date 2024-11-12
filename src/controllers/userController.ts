@@ -15,11 +15,10 @@ export default class UserController {
     }
 
     public static async createNewUser(request: Request, response: Response) {
-        const {name, username, email, password, userType} = request.body;
-        //! MOVE EMAIL VALIDATION TO FRONTEND PART
+        const {name, email, password, userType} = request.body;
         try {
             const hash: string = await EncryptionService.encryptPassword(password);
-            const test = await UserModel.createUser(name, username, email, hash, userType);
+            const test = await UserModel.createUser(name, email, hash, userType);
             response.status(200).json({ message: test });
         }
         catch(err: any) {
