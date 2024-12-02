@@ -6,7 +6,7 @@ export default class UserController {
     public static async getUser(request: Request, response: Response) {
         try {
             //! PENDING TO MODIFY THIS METHOD
-            const test = await UserModel.getUser(request.body.username);
+            const test = await UserModel.getUser(request.body.email);
             response.status(200).json(test);
         }
         catch(err) {

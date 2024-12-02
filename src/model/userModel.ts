@@ -3,7 +3,7 @@ import pool from '../db';
 
 export default class UserModel {
     public static async getUser(email: string): Promise<RowDataPacket[]> {
-        const [result] = await pool.query<RowDataPacket[]>('SELECT * FROM User WHERE email = ?', [email]);
+        const [result] = await pool.query<RowDataPacket[]>('SELECT * FROM User JOIN Person on User.id_person = Person.id_person WHERE User.email = ?', [email]);
         return result;
     }
 
@@ -15,7 +15,7 @@ export default class UserModel {
             const [existingUser] = await connection.query<RowDataPacket[]>('SELECT EXISTS (SELECT 1 FROM User WHERE email = ?) AS existingUser', [email]);
             if(existingUser[0].existingUser) {
                 await connection.rollback();
-                throw new Error('Email already exists');
+                throw new Error('El correo electrónico ya existe.');
             }
 
             const [newPerson] = await connection.query<ResultSetHeader>('INSERT INTO Person (name) VALUES (?)', [name]);
@@ -26,7 +26,7 @@ export default class UserModel {
 
             await connection.commit();
 
-            return 'User created successfully';
+            return 'Usuario creado exitósamente';
         }
         catch(err) {
             connection.rollback();

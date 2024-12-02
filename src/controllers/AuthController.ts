@@ -3,16 +3,19 @@ import UserModel from '../model/userModel';
 import { RowDataPacket } from 'mysql2';
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken';
+import * as dotenv from 'dotenv';
 
+dotenv.config();
 export default class AuthController {
-    private static readonly secret_key: string = '(Ph}S6O=S[5-L8cR=5;lGN7D/oLg7HF8';
+    private static readonly access_token: string = process.env.ACCESS_SECRET || '';
+    private static readonly refresh_token: string = process.env.REFRESH_SECRET || '';
     
     public static async login(request: Request, response: Response) {
-        const { username, password } = request.body;
+        const { email, password } = request.body;
 
-        const [user]: RowDataPacket[] = await UserModel.getUser(username);
+        const [user]: RowDataPacket[] = await UserModel.getUser(email);
         if(!user) {
-            response.status(400).json({ error: 'Wrong username' });
+            response.status(400).json({ error: 'Wrong email' });
             return;
         }
         
@@ -23,6 +26,40 @@ export default class AuthController {
             return;
         }
 
-        response.json(jwt.sign({ username: user.username, userType: user.userType }, AuthController.secret_key, { expiresIn: '1m' }));
+        response.json(AuthController.generateTokens(user.name, user.email, user.userType));
+    }
+
+    public static refreshToken(request: Request, response: Response) {
+        const refreshToken: string = request.body.refreshToken;
+
+        if (!refreshToken) {
+            response.status(403).send('Refresh token is required');
+        }
+
+        jwt.verify(refreshToken, AuthController.refresh_token, (err, decoded) => {
+            if (err) {
+                response.status(403).send('Invalid refresh token');
+            }
+    
+            if (typeof decoded !== 'string' && decoded) {
+                response.json(AuthController.generateTokens(
+                    decoded.username, 
+                    decoded.email, 
+                    decoded.userType
+                ));
+            }
+            else {
+                response.status(403).send('Invalid token payload');
+            }
+        });
+    }
+
+    public static generateTokens(name: string, email: string, userType: string) {
+        const expiresIn: number = 3600;
+        const accessToken: string = jwt.sign({ username: name, email: email, userType: userType }, AuthController.access_token, { expiresIn: '1h' });
+
+        const refreshToken: string = jwt.sign({ username: name, email: email, userType: userType }, AuthController.refresh_token, { expiresIn: '7d' });
+
+        return { accessToken, refreshToken, expiresIn };
     }
 }
