@@ -12,12 +12,6 @@ export default class UserModel {
         try {
             await connection.beginTransaction();
 
-            const [existingUser] = await connection.query<RowDataPacket[]>('SELECT EXISTS (SELECT 1 FROM User WHERE email = ?) AS existingUser', [email]);
-            if(existingUser[0].existingUser) {
-                await connection.rollback();
-                throw new Error('El correo electrónico ya existe.');
-            }
-
             const [newPerson] = await connection.query<ResultSetHeader>('INSERT INTO Person (name) VALUES (?)', [name]);
 
             const idPerson: number = newPerson.insertId;

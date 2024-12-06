@@ -15,18 +15,18 @@ export default class AuthController {
 
         const [user]: RowDataPacket[] = await UserModel.getUser(email);
         if(!user) {
-            response.status(400).json({ error: 'Wrong email' });
+            response.status(400).json('Correo electrónico incorrecto');
             return;
         }
         
         const isThePasswordRight: boolean = await bcrypt.compare(password, user.password);
         
         if(!isThePasswordRight) {
-            response.status(400).json({ error: 'Wrong password' });
+            response.status(400).json('Contraseña incorrecta');
             return;
         }
 
-        response.json(AuthController.generateTokens(user.name, user.email, user.userType));
+        response.json(AuthController.generateTokens(user.name, user.email, user.userType, user.id_user));
     }
 
     public static refreshToken(request: Request, response: Response) {
@@ -45,7 +45,8 @@ export default class AuthController {
                 response.json(AuthController.generateTokens(
                     decoded.username, 
                     decoded.email, 
-                    decoded.userType
+                    decoded.userType,
+                    decoded.id_user
                 ));
             }
             else {
@@ -54,11 +55,11 @@ export default class AuthController {
         });
     }
 
-    public static generateTokens(name: string, email: string, userType: string) {
+    public static generateTokens(name: string, email: string, userType: string, userId: number) {
         const expiresIn: number = 3600;
-        const accessToken: string = jwt.sign({ username: name, email: email, userType: userType }, AuthController.access_token, { expiresIn: '1h' });
+        const accessToken: string = jwt.sign({ username: name, email: email, userType: userType, userId }, AuthController.access_token, { expiresIn: '1h' });
 
-        const refreshToken: string = jwt.sign({ username: name, email: email, userType: userType }, AuthController.refresh_token, { expiresIn: '7d' });
+        const refreshToken: string = jwt.sign({ username: name, email: email, userType: userType, userId }, AuthController.refresh_token, { expiresIn: '7d' });
 
         return { accessToken, refreshToken, expiresIn };
     }

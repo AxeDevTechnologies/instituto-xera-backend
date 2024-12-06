@@ -18,8 +18,8 @@ export default class UserController {
         const {name, email, password, userType} = request.body;
         try {
             const hash: string = await EncryptionService.encryptPassword(password);
-            const test = await UserModel.createUser(name, email, hash, userType);
-            response.status(200).json({ message: test });
+            const message = await UserModel.createUser(name, email, hash, userType);
+            response.status(200).json({ message: message });
         }
         catch(err: any) {
             response.status(500).json(err.message);
