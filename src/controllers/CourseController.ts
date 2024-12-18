@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import CourseModel from '../model/courseModel';
+import { uploadFile } from '../firebase/config';
 
 export default class CourseController {
     public static async getCourses(request: Request, response: Response) {
@@ -19,6 +20,25 @@ export default class CourseController {
         try {
             const createdUserMessage = await CourseModel.createCourse(courseName, userId);
             response.status(200).json({ message: createdUserMessage });
+        }
+        catch(err: any) {
+            response.status(500).json(err.message);
+        }
+    }
+
+    public static async createSubTopic(request: Request, response: Response) {
+        try {
+            const file = request.file;
+            const name = request.body.name;
+
+            if(!file || !name) {
+                response.status(400).json({ message: 'Archivo y nombre son requeridos'});
+            }
+
+            const contentType = file?.mimetype;
+
+            uploadFile(name, file!.buffer, contentType!);
+            response.status(200).json({ message: 'Subtema guardado exitósamente '});
         }
         catch(err: any) {
             response.status(500).json(err.message);

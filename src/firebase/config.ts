@@ -13,8 +13,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const storage = getStorage();
 
-export const uploadFile = async (name: string, file: Blob | Uint8Array | ArrayBuffer) => {
+export const uploadFile = async (name: string, file: Blob | Uint8Array | ArrayBuffer, contentType: string) => {
     const storageRef = ref(storage, name);
-    const result = await uploadBytes(storageRef, file);
-    console.log(result);
+    const metadata = {contentType};
+    await uploadBytes(storageRef, file, metadata);
 }
