@@ -13,7 +13,7 @@ export default class AuthController {
     public static async login(request: Request, response: Response) {
         const { email, password } = request.body;
 
-        const [user]: RowDataPacket[] = await UserModel.getUser(email);
+        const user = await UserModel.getUser(email);
         if(!user) {
             response.status(400).json('Correo electrónico incorrecto');
             return;
