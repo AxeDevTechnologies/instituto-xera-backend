@@ -4,7 +4,8 @@ import cors from 'cors';
 
 import userRouters from './routes/User';
 import Authentication from './routes/Authentication';
-import Course from './routes/Course';
+import Class from './routes/Class';
+import Workshop from './routes/Workshop';
 
 const app = express();
 app.use(cors({
@@ -15,7 +16,8 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json());
 
 app.use(userRouters);
-app.use(Course);
+app.use(Class);
+app.use(Workshop);
 app.use('/auth', Authentication);
 
 app.use((req, res) => {

@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import UserModel from '../model/userModel';
-import { RowDataPacket } from 'mysql2';
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken';
 import * as dotenv from 'dotenv';
