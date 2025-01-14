@@ -18,14 +18,14 @@ export default class AuthController {
             return;
         }
         
-        const isThePasswordRight: boolean = await bcrypt.compare(password, user.password);
+        const isThePasswordRight: boolean = await bcrypt.compare(password, user.userInformation.password);
         
         if(!isThePasswordRight) {
             response.status(400).json('Contraseña incorrecta');
             return;
         }
 
-        response.json(AuthController.generateTokens(user.name, user.email, user.userType, user.id_user));
+        response.json(AuthController.generateTokens(user.userInformation.name, user.userInformation.email, user.userInformation.userType, user.userId));
     }
 
     public static refreshToken(request: Request, response: Response) {
@@ -54,7 +54,7 @@ export default class AuthController {
         });
     }
 
-    public static generateTokens(name: string, email: string, userType: string, userId: number) {
+    public static generateTokens(name: string, email: string, userType: string, userId: string) {
         const expiresIn: number = 3600;
         const accessToken: string = jwt.sign({ username: name, email: email, userType: userType, userId }, AuthController.access_token, { expiresIn: '1h' });
 

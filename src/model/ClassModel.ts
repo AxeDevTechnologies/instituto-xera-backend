@@ -1,19 +1,24 @@
 import { db } from '../firebase/config';
-import { collection, doc, getDocs, addDoc } from 'firebase/firestore';
+import { collection, getDocs, getDoc, addDoc, where, query, doc } from 'firebase/firestore';
 export default class ClassModel {
 
     public static async getClasses(teacherId: string) {
         try {
-            const querySnapshot = await getDocs(collection(db, "Class"));
+            const classQuery = query(collection(db, 'Class'), where('userId', '==', teacherId));
+            const classResult = await getDocs(classQuery);
 
-        const classes: any[] = [];
+            const userRef = doc(db, 'User', teacherId);
+            const userSnap = await getDoc(userRef);
 
-            querySnapshot.forEach((doc) => {
-                classes.push({ id: doc.id, ...doc.data() });
-            });
+            const classes: any[] = [];
 
-        return classes;
+                classResult.forEach((doc) => {
+                    classes.push({ id: doc.id, ...doc.data(), username: userSnap.data()!.name });
+                });
+
+            return classes;
         }
+
         catch(err) {
             throw new Error(err as string);
         }
@@ -22,7 +27,7 @@ export default class ClassModel {
     public static async createClass(className: string, userId: number): Promise<string> {
         try {
             await addDoc(collection(db, "Class"), {
-                name: className,
+                className: className,
                 userId: userId,
             });
 

@@ -1,14 +1,17 @@
 import { db } from '../firebase/config';
 import { collection, doc, getDocs, addDoc, getDoc, where, query, QuerySnapshot, DocumentData } from 'firebase/firestore';
 export default class WorkshopModel {
-    public static async getWorkshops(userId: string) {
+    public static async getWorkshops(teacherId: string) {
         try {
-            const workshopQuery: QuerySnapshot<DocumentData, DocumentData> = await getDocs(query(collection(db, 'Workshops'), where('userId', '==', userId)));
+            const workshopQuery: QuerySnapshot<DocumentData, DocumentData> = await getDocs(query(collection(db, 'Workshop'), where('userId', '==', teacherId)));
+
+            const userRef = doc(db, 'User', teacherId);
+            const userSnap = await getDoc(userRef);
 
             const workshops: any[] = [];
 
             workshopQuery.forEach((doc) => {
-                workshops.push({ id: doc.id, ...doc.data() });
+                workshops.push({ id: doc.id, ...doc.data(), teacher: userSnap.data()!.name });
             });
 
             return workshops;

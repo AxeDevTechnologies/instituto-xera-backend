@@ -10,7 +10,10 @@ export default class UserModel {
             if(userSnap.empty) {
                 throw new Error('Usuario no encontrado');
             }
-            return userSnap.docs[0].data();
+            return {
+                userId: userSnap.docs[0].id,
+                userInformation: userSnap.docs[0].data()
+            };
         }
         catch(err) {
             throw new Error(err as string);

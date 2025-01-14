@@ -5,7 +5,7 @@ import { uploadFile } from '../firebase/FirebaseStorage';
 export default class ClassController {
     public static async getWorkshops(request: Request, response: Response) {
         try {
-            const workshops = await WorkshopModel.getWorkshops(request.body.userId);
+            const workshops = await WorkshopModel.getWorkshops(request.query.teacherId as string);
 
             response.status(200).json(workshops);
         }
