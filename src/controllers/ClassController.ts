@@ -19,6 +19,7 @@ export default class ClassController {
             const file = request.file;
             const className = request.body.name;
             const userId = request.body.userId;
+            const classType = request.body.classType;
 
             if(!file || !className) {
                 response.status(400).json({ message: 'Archivo y nombre son requeridos'});
@@ -27,7 +28,7 @@ export default class ClassController {
             const contentType = file?.mimetype;
 
             uploadFile(`Class/${className}`, file!.buffer, contentType!);
-            const createdUserMessage = await ClassModel.createClass(className, userId);
+            const createdUserMessage = await ClassModel.createClass(className, userId, classType);
             response.status(200).json({ message: createdUserMessage });
         }
         catch(err: any) {
@@ -37,7 +38,7 @@ export default class ClassController {
 
     public static async getURLClass(request: Request, response: Response) {
         try {
-            const classVideo: string = await getURLVideo(request.body.className);
+            const classVideo: string = await getURLVideo(request.query.className as string);
             response.status(200).json({ video: classVideo });
         }
         catch(err: any) {

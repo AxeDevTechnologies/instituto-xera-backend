@@ -6,6 +6,7 @@ import userRouters from './routes/User';
 import Authentication from './routes/Authentication';
 import Class from './routes/Class';
 import Workshop from './routes/Workshop';
+import Subscription from './routes/Subscriptions';
 
 const app = express();
 app.use(cors({
@@ -19,6 +20,7 @@ app.use(userRouters);
 app.use(Class);
 app.use(Workshop);
 app.use('/auth', Authentication);
+app.use(Subscription);
 
 app.use((req, res) => {
     res.status(404).send('<h1>Page not found!</h1>');
