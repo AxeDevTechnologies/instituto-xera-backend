@@ -26,13 +26,13 @@ export default class ClassModel {
 
     public static async createClass(className: string, userId: number, classType: string): Promise<string> {
         try {
-            await addDoc(collection(db, "Class"), {
+            const response = await addDoc(collection(db, "Class"), {
                 className: className,
                 userId: userId,
                 classType: classType
             });
 
-            return 'Clase creada exitósamente';
+            return response.id;
         }
         catch(err) {
             throw new Error(err as string);

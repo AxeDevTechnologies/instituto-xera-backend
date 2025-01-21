@@ -28,8 +28,9 @@ export default class ClassController {
             const contentType = file?.mimetype;
 
             uploadFile(`Class/${className}`, file!.buffer, contentType!);
-            const createdUserMessage = await ClassModel.createClass(className, userId, classType);
-            response.status(200).json({ message: createdUserMessage });
+            const classId = await ClassModel.createClass(className, userId, classType);
+            
+            response.status(200).json({ message: 'Clase creada correctamente', classId:  classId });
         }
         catch(err: any) {
             response.status(500).json(err.message);

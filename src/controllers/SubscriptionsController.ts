@@ -1,37 +1,46 @@
 import { Request, Response } from 'express';
-import { VexorSubscriptionBody } from 'vexor';
 import SubscriptionModel from '../model/SubscriptionModel';
-
+import { PreApprovalPlanRequest } from 'mercadopago/dist/clients/preApprovalPlan/commonTypes';
 export default class SuscriptionsController {
-    private static baseSubscription: VexorSubscriptionBody = {
-        name: '',
-        description: '',
-        interval: '',
-        price: 699,
-        currency: 'MXN',
-        successRedirect: 'https://www.youtube.com/', //? This should not be a local url, instead should be a public url
-        customer: {
-            email: '',
-            name: '',
+    private static planData: PreApprovalPlanRequest = {
+        reason: 'Akokotzin y Xera - Suscripción semestral',
+        auto_recurring: {
+          frequency: 6, // Cada 1 mes
+          frequency_type: 'months', // months
+          transaction_amount: 4999, // Monto a cobrar
+          currency_id: 'MXN', // Moneda
         },
-    }
+        payment_methods_allowed: {
+          payment_types: [
+            { id: "credit_card" }, // Tarjeta de crédito
+            { id: "debit_card" },   // Tarjeta de débito
+          ],
+          payment_methods: [
+            { id: "visa" },          // Visa
+            { id: "master" },        // MasterCard
+            { id: "debito" },        // Débito
+          ],
+        },
+        back_url: "https://www.youtube.com/",
+      };
 
-    public static async monthlySuscription(request: Request, response: Response) {
+    public static async membershipSubscription(request: Request, response: Response) {
         try {
-            SuscriptionsController.baseSubscription.name = request.body.name;
-            SuscriptionsController.baseSubscription.description = request.body.description;
-            SuscriptionsController.baseSubscription.interval = request.body.interval;
-            SuscriptionsController.baseSubscription.price = request.body.price;
-            SuscriptionsController.baseSubscription.customer = {
-                email: request.body.email,
-                name: request.body.username
-            };
-
-            const payment = await SubscriptionModel.monthlySuscription(SuscriptionsController.baseSubscription);
-            response.status(200).json(payment);
+            const payment = await SubscriptionModel.membershipSubscription(SuscriptionsController.planData);
+            response.status(200).json({ urlPayment: payment });
         }
         catch(err) {
-            console.log(err)
+            response.status(500).json({ message: err });
+        }
+    }
+
+    public static async getMembershipPaymentURL(request: Request, response: Response) {
+        try {
+            const paymentURL = await SubscriptionModel.getMembershipPaymentURL(request.query.course as string, request.query.membershipType as string);
+
+            response.status(200).json({ course: paymentURL });
+        }
+        catch(err) {
             response.status(500).json({ message: err });
         }
     }
