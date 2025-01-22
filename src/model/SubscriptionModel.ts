@@ -14,7 +14,6 @@ export default class SubscriptionModel {
             return response.init_point;
         }
         catch(err) {
-            console.log(err);
             throw new Error(err as string);
         }
     }
@@ -23,11 +22,9 @@ export default class SubscriptionModel {
         try {
             const approvalPlan: PreApproval = new PreApproval(client);
             const response: PreApprovalResponse = await approvalPlan.create(subscriptionPlan);
-            console.log(response);
             return response;
         }
         catch(err) {
-            console.log(err);
             throw new Error(err as string);
         }
     }

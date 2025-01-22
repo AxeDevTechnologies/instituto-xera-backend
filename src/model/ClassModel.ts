@@ -1,13 +1,25 @@
 import { db } from '../firebase/config';
-import { collection, getDocs, getDoc, addDoc, where, query, doc } from 'firebase/firestore';
+import { collection, getDocs, getDoc, addDoc, where, query, doc, or, QueryConstraint } from 'firebase/firestore';
 export default class ClassModel {
 
-    public static async getClasses(teacherId: string) {
+    public static async getClasses(teacherId?: string, institute?: string) {
         try {
-            const classQuery = query(collection(db, 'Class'), where('userId', '==', teacherId));
+            const filters: QueryConstraint[] = [];
+            if (teacherId !== '') {
+                filters.push(where('userId', '==', teacherId));
+            }
+              
+              if (institute !== '') {
+                filters.push(where('institute', '==', institute));
+            }
+
+            const classQuery = filters.length > 0 
+                ? query(collection(db, 'Class'), ...filters)
+                : collection(db, 'Class');
+
             const classResult = await getDocs(classQuery);
 
-            const userRef = doc(db, 'User', teacherId);
+            const userRef = doc(db, 'User', teacherId || classResult.docs[0].data().userId);
             const userSnap = await getDoc(userRef);
 
             const classes: any[] = [];
@@ -24,12 +36,13 @@ export default class ClassModel {
         }
     }
 
-    public static async createClass(className: string, userId: number, classType: string): Promise<string> {
+    public static async createClass(className: string, userId: number, classType: string, institute: string): Promise<string> {
         try {
             const response = await addDoc(collection(db, "Class"), {
                 className: className,
                 userId: userId,
-                classType: classType
+                classType: classType,
+                institute: institute
             });
 
             return response.id;

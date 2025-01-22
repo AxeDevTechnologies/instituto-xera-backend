@@ -25,7 +25,7 @@ export default class AuthController {
             return;
         }
 
-        response.json(AuthController.generateTokens(user.userInformation.name, user.userInformation.email, user.userInformation.userType, user.userId));
+        response.json(AuthController.generateTokens(user.userInformation.name, user.userInformation.email, user.userInformation.userType, user.userId, user.userInformation.institute));
     }
 
     public static refreshToken(request: Request, response: Response) {
@@ -45,7 +45,8 @@ export default class AuthController {
                     decoded.username, 
                     decoded.email, 
                     decoded.userType,
-                    decoded.id_user
+                    decoded.id_user,
+                    decoded.institute
                 ));
             }
             else {
@@ -54,11 +55,11 @@ export default class AuthController {
         });
     }
 
-    public static generateTokens(name: string, email: string, userType: string, userId: string) {
+    public static generateTokens(name: string, email: string, userType: string, userId: string, institute: string) {
         const expiresIn: number = 3600;
-        const accessToken: string = jwt.sign({ username: name, email: email, userType: userType, userId }, AuthController.access_token, { expiresIn: '1h' });
+        const accessToken: string = jwt.sign({ username: name, email: email, userType: userType, userId, institute }, AuthController.access_token, { expiresIn: '1d' });
 
-        const refreshToken: string = jwt.sign({ username: name, email: email, userType: userType, userId }, AuthController.refresh_token, { expiresIn: '7d' });
+        const refreshToken: string = jwt.sign({ username: name, email: email, userType: userType, userId, institute }, AuthController.refresh_token, { expiresIn: '7d' });
 
         return { accessToken, refreshToken, expiresIn };
     }

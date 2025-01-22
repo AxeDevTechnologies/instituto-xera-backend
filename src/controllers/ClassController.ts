@@ -5,7 +5,7 @@ import { uploadFile, getURLVideo } from '../firebase/FirebaseStorage';
 export default class ClassController {
     public static async getAllClasses(request: Request, response: Response) {
         try {
-            const classes = await ClassModel.getClasses(request.query.teacherId as string);
+            const classes = await ClassModel.getClasses(request.query.teacherId as string || '', request.query.institute as string || '');
 
             response.status(200).json(classes);
         }
@@ -20,6 +20,7 @@ export default class ClassController {
             const className = request.body.name;
             const userId = request.body.userId;
             const classType = request.body.classType;
+            const institute = request.body.institute;
 
             if(!file || !className) {
                 response.status(400).json({ message: 'Archivo y nombre son requeridos'});
@@ -28,9 +29,9 @@ export default class ClassController {
             const contentType = file?.mimetype;
 
             uploadFile(`Class/${className}`, file!.buffer, contentType!);
-            const classId = await ClassModel.createClass(className, userId, classType);
+            await ClassModel.createClass(className, userId, classType, institute);
             
-            response.status(200).json({ message: 'Clase creada correctamente', classId:  classId });
+            response.status(200).json({ message: 'Clase creada correctamente' });
         }
         catch(err: any) {
             response.status(500).json(err.message);
