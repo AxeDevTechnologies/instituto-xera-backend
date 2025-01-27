@@ -12,6 +12,16 @@ export default class UserController {
         }
     }
 
+    public static async getStudents(request: Request, response: Response) {
+        try {
+            const user = await UserModel.getStudents();
+            response.status(200).json(user);
+        }
+        catch(err) {
+            response.status(500).json(err);
+        }
+    }
+
     public static async createNewUser(request: Request, response: Response) {
         const {name, email, password, userType} = request.body;
         try {

@@ -1,5 +1,5 @@
 import { db } from '../firebase/config';
-import { collection, getDocs, addDoc, query, where } from 'firebase/firestore';
+import { collection, getDocs, addDoc, query, where, DocumentData } from 'firebase/firestore';
 
 export default class UserModel {
     public static async getUser(email: string){
@@ -14,6 +14,27 @@ export default class UserModel {
                 userId: userSnap.docs[0].id,
                 userInformation: userSnap.docs[0].data()
             };
+        }
+        catch(err) {
+            throw new Error(err as string);
+        }
+    }
+
+    public static async getStudents(){
+        try {
+            const userQuery = query(collection(db, 'User'), where('userType', '==', 'Student'));
+            const userSnap = await getDocs(userQuery);
+
+            if(userSnap.empty) {
+                throw new Error('Usuario no encontrado');
+            }
+
+            const users: any = [];
+            userSnap.forEach((doc) => {
+                users.push({ id: doc.id, ...doc.data() });
+            });
+
+            return users;
         }
         catch(err) {
             throw new Error(err as string);

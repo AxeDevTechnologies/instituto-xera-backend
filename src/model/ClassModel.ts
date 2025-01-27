@@ -5,11 +5,11 @@ export default class ClassModel {
     public static async getClasses(teacherId?: string, institute?: string) {
         try {
             const filters: QueryConstraint[] = [];
-            if (teacherId !== '') {
+            if(teacherId !== '') {
                 filters.push(where('userId', '==', teacherId));
             }
               
-              if (institute !== '') {
+            if(institute !== '') {
                 filters.push(where('institute', '==', institute));
             }
 
