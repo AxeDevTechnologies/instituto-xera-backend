@@ -3,26 +3,26 @@ import SubscriptionModel from '../model/SubscriptionModel';
 import { PreApprovalPlanRequest } from 'mercadopago/dist/clients/preApprovalPlan/commonTypes';
 export default class SuscriptionsController {
     private static planData: PreApprovalPlanRequest = {
-        reason: 'Akokotzin y Xera - Suscripción semestral',
+        reason: 'Prueba',
         auto_recurring: {
-          frequency: 6, // Cada 1 mes
-          frequency_type: 'months', // months
-          transaction_amount: 4999, // Monto a cobrar
-          currency_id: 'MXN', // Moneda
+            frequency: 1, // Cada 1 mes
+            frequency_type: 'months', // months
+            transaction_amount: 10, // Monto a cobrar
+            currency_id: 'MXN', // Moneda
         },
         payment_methods_allowed: {
-          payment_types: [
-            { id: "credit_card" }, // Tarjeta de crédito
-            { id: "debit_card" },   // Tarjeta de débito
-          ],
-          payment_methods: [
-            { id: "visa" },          // Visa
-            { id: "master" },        // MasterCard
-            { id: "debito" },        // Débito
-          ],
+            payment_types: [
+                { id: "credit_card" }, // Tarjeta de crédito
+                { id: "debit_card" },   // Tarjeta de débito
+            ],
+            payment_methods: [
+                { id: "visa" },          // Visa
+                { id: "master" },        // MasterCard
+                { id: "debito" },        // Débito
+            ],
         },
-        back_url: "https://www.youtube.com/",
-      };
+        back_url: "https://2d98-2806-2f0-53e0-44d1-395-f671-83ad-161e.ngrok-free.app/webhook",
+    };
 
     public static async membershipSubscription(request: Request, response: Response) {
         try {

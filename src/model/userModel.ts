@@ -1,5 +1,5 @@
 import { db } from '../firebase/config';
-import { collection, getDocs, addDoc, query, where, DocumentData } from 'firebase/firestore';
+import { collection, getDocs, addDoc, query, where } from 'firebase/firestore';
 
 export default class UserModel {
     public static async getUser(email: string){
@@ -31,7 +31,10 @@ export default class UserModel {
 
             const users: any = [];
             userSnap.forEach((doc) => {
-                users.push({ id: doc.id, ...doc.data() });
+                const student = doc.data();
+                delete student.password
+                console.log(student);
+                users.push({ id: doc.id, ...student });
             });
 
             return users;

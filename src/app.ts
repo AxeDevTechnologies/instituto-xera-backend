@@ -7,6 +7,7 @@ import Authentication from './routes/Authentication';
 import Class from './routes/Class';
 import Workshop from './routes/Workshop';
 import Subscription from './routes/Subscriptions';
+import Notification from './routes/Notification';
 
 const app = express();
 app.use(cors({
@@ -21,6 +22,7 @@ app.use(Class);
 app.use(Workshop);
 app.use('/auth', Authentication);
 app.use(Subscription);
+app.use(Notification);
 
 app.use((req, res) => {
     res.status(404).send('<h1>Page not found!</h1>');

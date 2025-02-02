@@ -4,7 +4,7 @@ import { client } from '../lib/MercadoPago';
 import { PreApprovalResponse } from 'mercadopago/dist/clients/preApproval/commonTypes';
 import { PreApprovalCreateData } from 'mercadopago/dist/clients/preApproval/create/types';
 import { db } from '../firebase/config';
-import { collection, getDocs, addDoc, query, where } from 'firebase/firestore';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 
 export default class SubscriptionModel {
     public static async membershipSubscription(subscriptionPlan: PreApprovalPlanRequest) {
@@ -14,6 +14,7 @@ export default class SubscriptionModel {
             return response.init_point;
         }
         catch(err) {
+            console.log(err);
             throw new Error(err as string);
         }
     }
