@@ -1,33 +1,41 @@
 import { Request, Response } from 'express';
 import SubscriptionModel from '../model/SubscriptionModel';
-import { PreApprovalPlanRequest } from 'mercadopago/dist/clients/preApprovalPlan/commonTypes';
+import Stripe from 'stripe';
 export default class SuscriptionsController {
-    private static planData: PreApprovalPlanRequest = {
-        reason: 'Prueba',
-        auto_recurring: {
-            frequency: 1, // Cada 1 mes
-            frequency_type: 'months', // months
-            transaction_amount: 10, // Monto a cobrar
-            currency_id: 'MXN', // Moneda
-        },
-        payment_methods_allowed: {
-            payment_types: [
-                { id: "credit_card" }, // Tarjeta de crédito
-                { id: "debit_card" },   // Tarjeta de débito
-            ],
-            payment_methods: [
-                { id: "visa" },          // Visa
-                { id: "master" },        // MasterCard
-                { id: "debito" },        // Débito
-            ],
-        },
-        back_url: "https://2d98-2806-2f0-53e0-44d1-395-f671-83ad-161e.ngrok-free.app/webhook",
-    };
+    // private static planData: PreApprovalPlanRequest = {
+    //     reason: 'Prueba',
+    //     auto_recurring: {
+    //         frequency: 1, // Cada 1 mes
+    //         frequency_type: 'months', // months
+    //         transaction_amount: 10, // Monto a cobrar
+    //         currency_id: 'MXN', // Moneda
+    //     },
+    //     payment_methods_allowed: {
+    //         payment_types: [
+    //             { id: "credit_card" }, // Tarjeta de crédito
+    //             { id: "debit_card" },   // Tarjeta de débito
+    //         ],
+    //         payment_methods: [
+    //             { id: "visa" },          // Visa
+    //             { id: "master" },        // MasterCard
+    //             { id: "debito" },        // Débito
+    //         ],
+    //     },
+    //     back_url: "https://2d98-2806-2f0-53e0-44d1-395-f671-83ad-161e.ngrok-free.app/webhook",
+    // };
+
+    private static user: Stripe.CustomerCreateParams = {
+        email: 'ala@gmail.com',
+        metadata: {
+            id: '0VySSvjD60FN5wVOS22d',
+        }
+    }
 
     public static async membershipSubscription(request: Request, response: Response) {
         try {
-            const payment = await SubscriptionModel.membershipSubscription(SuscriptionsController.planData);
-            response.status(200).json({ urlPayment: payment });
+            // const payment = await SubscriptionModel.membershipSubscription(SuscriptionsController.planData);
+            const customer = await SubscriptionModel.createStripeUser(SuscriptionsController.user);
+            response.status(200).json({ customerId: customer });
         }
         catch(err) {
             response.status(500).json({ message: err });
