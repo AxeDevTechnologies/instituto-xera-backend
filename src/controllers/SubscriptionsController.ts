@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import SubscriptionModel from '../model/SubscriptionModel';
-import Stripe from 'stripe';
 import {config} from 'dotenv'
 
 config();
@@ -15,11 +14,6 @@ export default class SubscriptionsController {
         SubscriptionsController.memberships.set('Xera - Biannual', process.env.XERA_BIANNUAL_PRICE!)
         SubscriptionsController.memberships.set('Akokotzin - Biannual', process.env.AKOKOTZIN_BIANNUAL_PRICE!)
         SubscriptionsController.memberships.set('Akokotzin - Xera - Biannual', process.env.XERA_AKOKOTZI_BIANNUAL_PRICE!)
-    }
-
-    public static async webhooks(request: Request, response: Response) {
-        console.log(request.body);
-        response.status(200).json({ response: request.body });
     }
 
     public static async createSubscription(request: Request, response: Response) {
@@ -57,7 +51,7 @@ export default class SubscriptionsController {
 
     public static async getAllSubscriptions(request: Request, response: Response) {
         try {
-            const subscription = await SubscriptionModel.getSubscriptions();
+            const subscription = await SubscriptionModel.getSubscriptions(request.query.customerId as string);
 
             response.status(200).json({ course: subscription });
         }
@@ -82,6 +76,17 @@ export default class SubscriptionsController {
             const subscription = await SubscriptionModel.retrieveSubscription(request.query.subscriptionID as string);
 
             response.status(200).json({ course: subscription });
+        }
+        catch(err) {
+            response.status(500).json({ message: err });
+        }
+    }
+
+    public static async retrieveProduct(request: Request, response: Response) {
+        try {
+            const product = await SubscriptionModel.retrieveProduct(request.query.productId as string);
+
+            response.status(200).json({ product: product });
         }
         catch(err) {
             response.status(500).json({ message: err });

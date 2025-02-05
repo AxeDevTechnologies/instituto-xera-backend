@@ -34,7 +34,6 @@ export default class UserModel {
             userSnap.forEach((doc) => {
                 const student = doc.data();
                 delete student.password
-                console.log(student);
                 users.push({ id: doc.id, ...student });
             });
 
@@ -47,23 +46,27 @@ export default class UserModel {
 
     public static async createUser(name: string, email: string, password: string, userType: string): Promise<string> {
         try {
+            const testClock = await SubscriptionModel.testClock(email);
             const customer = {
                 email: email,
                 name: name,
                 metadata: {
                     userType: userType,
                 },
+                test_clock: testClock.id,
             };
 
             const stripeCustomer = await SubscriptionModel.createStripeUser(customer);
 
-            await addDoc(collection(db, "User"), {
+            const firebaseClient = await addDoc(collection(db, "User"), {
                 email: email,
                 password: password,
                 userType: userType,
                 name: name,
                 stripeId: stripeCustomer,
             });
+
+            SubscriptionModel.updateStripeUser(stripeCustomer, firebaseClient.id);
 
             return 'Usuario creado exitósamente';
         }

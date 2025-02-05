@@ -3,7 +3,8 @@ import NotificationController from '../controllers/NotificationController';
 
 const router: Router = Router();
 
-router.post('/webhook', NotificationController.setPayment);
+router.post('/monthly-payment', NotificationController.monthlyPayment);
+router.post('/subscription-payment', NotificationController.webhooks);
 
 
 export default router;

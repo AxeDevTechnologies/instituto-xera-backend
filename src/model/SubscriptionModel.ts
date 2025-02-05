@@ -1,6 +1,6 @@
 import { stripe } from '../lib/Stripe';
 import { db } from '../firebase/config';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, getDocs, query, where, updateDoc } from 'firebase/firestore';
 import Stripe from 'stripe';
 
 export default class SubscriptionModel {
@@ -16,8 +16,8 @@ export default class SubscriptionModel {
                 }],
                 mode: 'subscription',
                 customer: customerID,
-                success_url: 'https://9cd1-2806-2f0-53e0-44d1-52f-71d1-a0bb-f0ac.ngrok-free.app/success-subscription',
-                cancel_url: 'https://9cd1-2806-2f0-53e0-44d1-52f-71d1-a0bb-f0ac.ngrok-free.app/failed-subscription'
+                success_url: 'https://378a-187-176-187-67.ngrok-free.app/success-subscription',
+                cancel_url: 'https://378a-187-176-187-67.ngrok-free.app/failed-subscription'
             });
             return subscription;
         }
@@ -31,7 +31,6 @@ export default class SubscriptionModel {
     public static async createStripeUser(newClient: Stripe.CustomerCreateParams) {
         try {
             const customer = await stripe.customers.create(newClient);
-            stripe.paymentMethods.attach
             return customer.id;
         }
         catch (err) {
@@ -39,7 +38,22 @@ export default class SubscriptionModel {
         }
     }
 
-    //? CONSULTA DE PRECIOS Y/O PRODUCTOS
+    public static async updateStripeUser(customerId: string, firebaseCustomerId: string) {
+        try {
+            const customer = await stripe.customers.update(customerId, {
+                metadata: {
+                    firebaseCustomerId: firebaseCustomerId,
+                },
+            });
+        }
+        catch (err) {
+            throw new Error(err as string);
+        }
+    }
+
+    // ******** CONSULTA (QUERY, GET) DE DATOS ******** //
+
+    //? CONSULTA DE PRECIOS
     public static async pricesList() {
         try {
             const priceList = await stripe.prices.list();
@@ -50,7 +64,7 @@ export default class SubscriptionModel {
         }
     }
 
-    //? CONSULTA DE PRECIOS Y/O PRODUCTOS
+    //! CONSULTA DE PRODUCTOS
     public static async productList() {
         try {
             const priceList = await stripe.products.list();
@@ -61,11 +75,10 @@ export default class SubscriptionModel {
         }
     }
 
-    //? CONSULTA DE PRECIOS Y/O PRODUCTOS
+    //? CONSULTA DE UNA SUSCRIPCIÓN EN ESPECÍFICO
     public static async retrieveSubscription(subscriptionID: string) {
         try {
             const subscription = await stripe.subscriptions.retrieve(subscriptionID);
-            console.log(subscription.items.data[0].plan.product)
             return subscription;
         }
         catch (err) {
@@ -73,14 +86,14 @@ export default class SubscriptionModel {
         }
     }
 
-    //? CONSULTA DE PRECIOS Y/O PRODUCTOS
-    public static async getSubscriptions() {
+    //! CONSULTA DE TODAS LAS SUSCRIPCIONES DE UN USUARIO
+    public static async getSubscriptions(customerId: string) {
         try {
-            const priceList = await stripe.subscriptions.list({
-                customer: 'cus_RiI9mobAO9NJy8',
+            const subscriptionList = await stripe.subscriptions.list({
+                customer: customerId,
                 status: 'active',
             });
-            return priceList;
+            return subscriptionList;
         }
         catch (err) {
             throw new Error(err as string);
@@ -98,15 +111,67 @@ export default class SubscriptionModel {
         }
     }
 
-    public static async getMembershipPaymentURL(course: string, membershipType: string) {
+    //! CONSULTA DE UN PRODUCTO
+    public static async retrieveProduct(productId: string) {
         try {
-            const courseQuery = query(collection(db, 'Membership'), where('Course', '==', course));
-            const courseSnap = await getDocs(courseQuery);
+            const product = await stripe.products.retrieve(productId);
+            return product;
+        }
+        catch (err) {
+            throw new Error(err as string);
+        }
+    }
 
-            if (courseSnap.empty) {
-                throw new Error('Curso no encontrado');
+    public static async updateSubscriptionUser(customerId: string, status: string, initDate: number, dueDate: number, institute: string) {
+        try {
+            const userRef = collection(db, 'User');
+            const queryUser = query(userRef, where('stripeId', '==', customerId));
+
+            const querySnapshot = await getDocs(queryUser);
+
+            if(!querySnapshot.empty) {
+                await updateDoc(querySnapshot.docs[0].ref, {
+                    membership: {
+                        institute: institute,
+                        initDate: initDate,
+                        dueDate: dueDate,
+                        status: status
+                    },
+                });
+
             }
-            return courseSnap.docs[0].data()[membershipType];
+            else {
+                throw new Error('Usuario no existente');
+            }
+        }
+        catch (err) {
+            throw new Error(err as string);
+        }
+    }
+
+
+
+
+    //! *****************TEST CLOCK***************** \\
+    public static async testClock(testClockName: string) {
+        try {
+            const testClock = await stripe.testHelpers.testClocks.create({
+                frozen_time: Math.floor(Date.now() / 1000),
+                name: testClockName,
+            });
+
+            return testClock;
+        }
+        catch (err) {
+            throw new Error(err as string);
+        }
+    }
+
+    //? CREACIÓN DE USUARIO EN STRIPE CON TESTCLOCK
+    public static async createStripeUserWithTestClock(newClient: Stripe.CustomerCreateParams) {
+        try {
+            const customer = await stripe.customers.create(newClient);
+            return customer.id;
         }
         catch (err) {
             throw new Error(err as string);
