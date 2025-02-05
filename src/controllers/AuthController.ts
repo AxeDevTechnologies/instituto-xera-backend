@@ -25,7 +25,7 @@ export default class AuthController {
             return;
         }
 
-        response.json(AuthController.generateTokens(user.userInformation.name, user.userInformation.email, user.userInformation.userType, user.userId, user.userInformation.institute));
+        response.json(AuthController.generateTokens(user.userInformation.name, user.userInformation.email, user.userInformation.userType, user.userId, user.userInformation.institute, user.userInformation.stripeId));
     }
 
     public static refreshToken(request: Request, response: Response) {
@@ -46,7 +46,8 @@ export default class AuthController {
                     decoded.email, 
                     decoded.userType,
                     decoded.id_user,
-                    decoded.institute
+                    decoded.institute,
+                    decoded.stripeId
                 ));
             }
             else {
@@ -55,11 +56,11 @@ export default class AuthController {
         });
     }
 
-    public static generateTokens(name: string, email: string, userType: string, userId: string, institute: string) {
+    public static generateTokens(name: string, email: string, userType: string, userId: string, institute: string, stripeId: string) {
         const expiresIn: number = 3600;
-        const accessToken: string = jwt.sign({ username: name, email: email, userType: userType, userId, institute }, AuthController.access_token, { expiresIn: '1d' });
+        const accessToken: string = jwt.sign({ username: name, email: email, userType: userType, userId, institute, stripeId }, AuthController.access_token, { expiresIn: '1d' });
 
-        const refreshToken: string = jwt.sign({ username: name, email: email, userType: userType, userId, institute }, AuthController.refresh_token, { expiresIn: '7d' });
+        const refreshToken: string = jwt.sign({ username: name, email: email, userType: userType, userId, institute, stripeId }, AuthController.refresh_token, { expiresIn: '7d' });
 
         return { accessToken, refreshToken, expiresIn };
     }

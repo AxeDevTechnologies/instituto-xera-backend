@@ -1,5 +1,6 @@
 import { db } from '../firebase/config';
 import { collection, getDocs, addDoc, query, where } from 'firebase/firestore';
+import SubscriptionModel from './SubscriptionModel';
 
 export default class UserModel {
     public static async getUser(email: string){
@@ -46,12 +47,22 @@ export default class UserModel {
 
     public static async createUser(name: string, email: string, password: string, userType: string): Promise<string> {
         try {
+            const customer = {
+                email: email,
+                name: name,
+                metadata: {
+                    userType: userType,
+                },
+            };
+
+            const stripeCustomer = await SubscriptionModel.createStripeUser(customer);
 
             await addDoc(collection(db, "User"), {
                 email: email,
                 password: password,
                 userType: userType,
                 name: name,
+                stripeId: stripeCustomer,
             });
 
             return 'Usuario creado exitósamente';

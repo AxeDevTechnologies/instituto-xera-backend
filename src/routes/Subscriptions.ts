@@ -1,9 +1,16 @@
 import { Router } from 'express';
-import SuscriptionsController from '../controllers/SubscriptionsController';
+import SubscriptionsController from '../controllers/SubscriptionsController';
 
 const router: Router = Router();
 
-router.post('/membership-subscription', SuscriptionsController.membershipSubscription);
-router.get('/subscribe', SuscriptionsController.getMembershipPaymentURL);
+router.get('/price-list', SubscriptionsController.getAllPrices);
+router.get('/product-list', SubscriptionsController.getProductList);
+router.get('/retrieve-subscription', SubscriptionsController.retrieveSubscription);
+router.get('/retrieve-customer', SubscriptionsController.getCustomer);
+router.get('/subscription-list', SubscriptionsController.getAllSubscriptions);
+
+// * POST METHOD
+router.post('/subscribe', SubscriptionsController.createSubscription);
+router.post('/webhook', SubscriptionsController.webhooks)
 
 export default router;
