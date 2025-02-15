@@ -10,24 +10,29 @@ export default class AuthController {
     private static readonly refresh_token: string = process.env.REFRESH_SECRET || '';
     
     public static async login(request: Request, response: Response) {
-        const { email, password } = request.body;
+        try {
+            const { email, password } = request.body;
 
-        const user = await UserModel.getUser(email);
-        if(!user) {
-            response.status(400).json('Correo electrónico incorrecto');
-            return;
+            const user = await UserModel.getUser(email);
+            if(!user) {
+                response.status(400).json('Correo electrónico incorrecto');
+                return;
+            }
+            
+            const isThePasswordRight: boolean = await bcrypt.compare(password, user.userInformation.password);
+            
+            if(!isThePasswordRight) {
+                response.status(400).json('Contraseña incorrecta');
+                return;
+            }
+
+            delete user.userInformation.password;
+
+            response.json({token: AuthController.generateTokens(user.userInformation.name, user.userInformation.email), user });
         }
-        
-        const isThePasswordRight: boolean = await bcrypt.compare(password, user.userInformation.password);
-        
-        if(!isThePasswordRight) {
-            response.status(400).json('Contraseña incorrecta');
-            return;
+        catch(err) {
+            console.log(err);
         }
-
-        delete user.userInformation.password;
-
-        response.json({token: AuthController.generateTokens(user.userInformation.name, user.userInformation.email), userInformation: user.userInformation});
     }
 
     public static refreshToken(request: Request, response: Response) {
