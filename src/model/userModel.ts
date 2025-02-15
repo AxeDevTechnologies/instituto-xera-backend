@@ -9,7 +9,7 @@ export default class UserModel {
             const userSnap = await getDocs(userQuery);
 
             if(userSnap.empty) {
-                throw new Error('Usuario no encontrado');
+                return '';
             }
             return {
                 userId: userSnap.docs[0].id,
@@ -17,6 +17,7 @@ export default class UserModel {
             };
         }
         catch(err) {
+            console.log(err);
             throw new Error(err as string);
         }
     }

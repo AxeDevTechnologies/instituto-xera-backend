@@ -9,6 +9,9 @@ const upload = multer({ storage: multer.memoryStorage() });
 router.get('/get-classes', ClassController.getAllClasses);
 router.get('/get-teacher-classes', ClassController.getClassesForTeacher);
 router.get('/get-class-video', authenticateToken, ClassController.getURLClass);
-router.post('/create-class', authenticateToken, upload.single('video'), ClassController.createClass);
+router.post('/create-class', authenticateToken, upload.fields([
+    { name: 'video', maxCount: 1 },
+    { name: 'image', maxCount: 1 }
+]), ClassController.createClass);
 
 export default router;

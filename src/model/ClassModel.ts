@@ -70,18 +70,21 @@ export default class ClassModel {
         }
     }
 
-    public static async createClass(className: string, userId: number, classType: string, institute: string): Promise<string> {
+    public static async createClass(className: string, userId: number, classType: string, institute: string, thumbnail: string): Promise<string> {
+        thumbnail = thumbnail === '' ? 'default' : thumbnail;
         try {
             const response = await addDoc(collection(db, "Class"), {
                 className: className,
                 userId: userId,
                 classType: classType,
-                institute: institute
+                institute: institute,
+                thumbnail: thumbnail
             });
 
             return response.id;
         }
         catch(err) {
+            console.log({err});
             throw new Error(err as string);
         }
     }

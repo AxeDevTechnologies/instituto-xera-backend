@@ -17,3 +17,14 @@ export const getURLVideo = async (videoName: string): Promise<string> => {
         throw new Error('Error al cargar el vídeo');
     }
 }
+
+export const getImageVideo = async (videoName: string): Promise<string> => {
+    try {
+        const storageRef: StorageReference = ref(storage, videoName);
+        const url: string = await getDownloadURL(storageRef);
+        return url;
+    }
+    catch(err) {
+        return 'No hay imagen disponible';
+    }
+}
