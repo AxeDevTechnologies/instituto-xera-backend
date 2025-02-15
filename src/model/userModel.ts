@@ -1,33 +1,77 @@
-import { ResultSetHeader, RowDataPacket } from 'mysql2';
-import pool from '../db';
+import { db } from '../firebase/config';
+import { collection, getDocs, addDoc, query, where } from 'firebase/firestore';
+import SubscriptionModel from './SubscriptionModel';
 
 export default class UserModel {
-    public static async getUser(email: string): Promise<RowDataPacket[]> {
-        const [result] = await pool.query<RowDataPacket[]>('SELECT * FROM User JOIN Person on User.id_person = Person.id_person WHERE User.email = ?', [email]);
-        return result;
+    public static async getUser(email: string){
+        try {
+            const userQuery = query(collection(db, 'User'), where('email', '==', email));
+            const userSnap = await getDocs(userQuery);
+
+            if(userSnap.empty) {
+                throw new Error('Usuario no encontrado');
+            }
+            return {
+                userId: userSnap.docs[0].id,
+                userInformation: userSnap.docs[0].data()
+            };
+        }
+        catch(err) {
+            throw new Error(err as string);
+        }
+    }
+
+    public static async getStudents(){
+        try {
+            const userQuery = query(collection(db, 'User'), where('userType', '==', 'Student'));
+            const userSnap = await getDocs(userQuery);
+
+            if(userSnap.empty) {
+                throw new Error('Usuario no encontrado');
+            }
+
+            const users: any = [];
+            userSnap.forEach((doc) => {
+                const student = doc.data();
+                delete student.password
+                users.push({ id: doc.id, ...student });
+            });
+
+            return users;
+        }
+        catch(err) {
+            throw new Error(err as string);
+        }
     }
 
     public static async createUser(name: string, email: string, password: string, userType: string): Promise<string> {
-        const connection = await pool.getConnection();
         try {
-            await connection.beginTransaction();
+            const testClock = await SubscriptionModel.testClock(email);
+            const customer = {
+                email: email,
+                name: name,
+                metadata: {
+                    userType: userType,
+                },
+                test_clock: testClock.id,
+            };
 
-            const [newPerson] = await connection.query<ResultSetHeader>('INSERT INTO Person (name) VALUES (?)', [name]);
+            const stripeCustomer = await SubscriptionModel.createStripeUser(customer);
 
-            const idPerson: number = newPerson.insertId;
+            const firebaseClient = await addDoc(collection(db, "User"), {
+                email: email,
+                password: password,
+                userType: userType,
+                name: name,
+                stripeId: stripeCustomer,
+            });
 
-            await connection.query('INSERT INTO User (email, password, userType, id_person) VALUES (?, ?, ?, ?)', [email, password, userType, idPerson]);
-
-            await connection.commit();
+            SubscriptionModel.updateStripeUser(stripeCustomer, firebaseClient.id);
 
             return 'Usuario creado exitósamente';
         }
         catch(err) {
-            connection.rollback();
             throw new Error(err as string);
-        }
-        finally {
-            connection.release();
         }
     }
 }

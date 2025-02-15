@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import UserModel from '../model/userModel';
-import { RowDataPacket } from 'mysql2';
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken';
 import * as dotenv from 'dotenv';
@@ -13,20 +12,22 @@ export default class AuthController {
     public static async login(request: Request, response: Response) {
         const { email, password } = request.body;
 
-        const [user]: RowDataPacket[] = await UserModel.getUser(email);
+        const user = await UserModel.getUser(email);
         if(!user) {
             response.status(400).json('Correo electrónico incorrecto');
             return;
         }
         
-        const isThePasswordRight: boolean = await bcrypt.compare(password, user.password);
+        const isThePasswordRight: boolean = await bcrypt.compare(password, user.userInformation.password);
         
         if(!isThePasswordRight) {
             response.status(400).json('Contraseña incorrecta');
             return;
         }
 
-        response.json(AuthController.generateTokens(user.name, user.email, user.userType, user.id_user));
+        delete user.userInformation.password;
+
+        response.json({token: AuthController.generateTokens(user.userInformation.name, user.userInformation.email), userInformation: user.userInformation});
     }
 
     public static refreshToken(request: Request, response: Response) {
@@ -44,9 +45,7 @@ export default class AuthController {
             if (typeof decoded !== 'string' && decoded) {
                 response.json(AuthController.generateTokens(
                     decoded.username, 
-                    decoded.email, 
-                    decoded.userType,
-                    decoded.id_user
+                    decoded.email,
                 ));
             }
             else {
@@ -55,11 +54,11 @@ export default class AuthController {
         });
     }
 
-    public static generateTokens(name: string, email: string, userType: string, userId: number) {
+    public static generateTokens(name: string, email: string) {
         const expiresIn: number = 3600;
-        const accessToken: string = jwt.sign({ username: name, email: email, userType: userType, userId }, AuthController.access_token, { expiresIn: '1h' });
+        const accessToken: string = jwt.sign({ username: name, email: email }, AuthController.access_token, { expiresIn: '1d' });
 
-        const refreshToken: string = jwt.sign({ username: name, email: email, userType: userType, userId }, AuthController.refresh_token, { expiresIn: '7d' });
+        const refreshToken: string = jwt.sign({ username: name, email: email }, AuthController.refresh_token, { expiresIn: '7d' });
 
         return { accessToken, refreshToken, expiresIn };
     }

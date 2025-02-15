@@ -1,5 +1,6 @@
-import { initializeApp } from "firebase/app";
-import { getStorage, ref, uploadBytes } from "firebase/storage";
+import { initializeApp } from 'firebase/app';
+import { getStorage } from 'firebase/storage';
+import { getFirestore } from 'firebase/firestore'
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -10,11 +11,8 @@ const firebaseConfig = {
     messagingSenderId: "158505016529",
     appId: "1:158505016529:web:f9b692201db92565b239f0"
 };
-const app = initializeApp(firebaseConfig);
+initializeApp(firebaseConfig);
 const storage = getStorage();
+const db = getFirestore('instituto-xera');
 
-export const uploadFile = async (name: string, file: Blob | Uint8Array | ArrayBuffer, contentType: string) => {
-    const storageRef = ref(storage, name);
-    const metadata = {contentType};
-    await uploadBytes(storageRef, file, metadata);
-}
+export { storage, db };

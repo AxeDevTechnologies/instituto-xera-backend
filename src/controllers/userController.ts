@@ -1,13 +1,21 @@
 import UserModel from "../model/userModel";
 import { Request, Response } from 'express';
 import EncryptionService from "../services/EncryptionService";
-
 export default class UserController {
     public static async getUser(request: Request, response: Response) {
         try {
-            //! PENDING TO MODIFY THIS METHOD
-            const test = await UserModel.getUser(request.body.email);
-            response.status(200).json(test);
+            const user = await UserModel.getUser(request.body.email);
+            response.status(200).json(user);
+        }
+        catch(err) {
+            response.status(500).json(err);
+        }
+    }
+
+    public static async getStudents(request: Request, response: Response) {
+        try {
+            const user = await UserModel.getStudents();
+            response.status(200).json(user);
         }
         catch(err) {
             response.status(500).json(err);
