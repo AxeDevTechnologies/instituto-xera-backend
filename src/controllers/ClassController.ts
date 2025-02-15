@@ -5,7 +5,18 @@ import { uploadFile, getURLVideo } from '../firebase/FirebaseStorage';
 export default class ClassController {
     public static async getAllClasses(request: Request, response: Response) {
         try {
-            const classes = await ClassModel.getClasses(request.query.teacherId as string || '', request.query.institute as string || '');
+            const classes = await ClassModel.getClasses(request.query.institute as string || '');
+
+            response.status(200).json(classes);
+        }
+        catch (e) {
+            response.status(500).json(e);
+        }
+    }
+
+    public static async getClassesForTeacher(request: Request, response: Response) {
+        try {
+            const classes = await ClassModel.getClassesForTeacher(request.query.teacherId as string || '');
 
             response.status(200).json(classes);
         }
