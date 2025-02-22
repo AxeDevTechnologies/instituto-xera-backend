@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import ClassModel from '../model/ClassModel';
-import { uploadFile, getURLVideo, getImageVideo } from '../firebase/FirebaseStorage';
+import { uploadFile, getURLVideo, getImageVideo, deleteFile } from '../firebase/FirebaseStorage';
 
 export default class ClassController {
     public static async getAllClasses(request: Request, response: Response) {
@@ -27,9 +27,7 @@ export default class ClassController {
 
     public static async createClass(request: Request, response: Response) {
         try {
-            console.log(request, 'dsfhsdfsd');
             const files = request.files as { [fieldname: string]: Express.Multer.File[] };
-            console.log(files);
             const video = files['video'] ? files['video'][0] : null;
             const image = files['image'] ? files['image'][0] : null;
 
@@ -51,7 +49,7 @@ export default class ClassController {
                 const imageContentType = image.mimetype;
                 await uploadFile(`Thumbnail/${className}`, image.buffer, imageContentType);
 
-                thumbnail = await getImageVideo(`Thumbnail/${className}`);
+                thumbnail = await getImageVideo(`Thumbnail/${className}`) || 'default';
             }
 
             const classId: string = await ClassModel.createClass(className, userId, classType, institute, thumbnail);
@@ -61,6 +59,48 @@ export default class ClassController {
         catch(err: any) {
             console.log('aquí está el error', err);
             response.status(500).json(err.message);
+        }
+    }
+
+    public static async editClass(request: Request, response: Response) {
+        try {
+            console.log(request.body);
+            const files = request.files as { [fieldname: string]: Express.Multer.File[] };
+            const video = files['video'] ? files['video'][0] : null;
+            const image = files['image'] ? files['image'][0] : null;
+
+            const currentClassName: string = request.body.currentClassName;
+            const classId: string = request.body.classId;
+
+            if(!!video) {
+                const videoContentType = video!.mimetype;
+                const currentName: string = !!request.body.newClassName ? request.body.newClassName : currentClassName;
+
+                await deleteFile(`Class/${currentClassName}`);
+                await uploadFile(`Class/${currentClassName}`, video!.buffer, videoContentType!);
+            }
+
+            let thumbnail: string = '';
+            if (!!image) {
+                const imageContentType = image.mimetype;
+                const currentName: string = !!request.body.newClassName ? request.body.newClassName : currentClassName;
+
+                await deleteFile(`Thumbnail/${currentClassName}`);
+                await uploadFile(`Thumbnail/${currentName}`, image.buffer, imageContentType);
+
+                thumbnail = await getImageVideo(`Thumbnail/${currentName}`) || 'default';
+                await ClassModel.updateImageClass(classId, thumbnail);
+            }
+            
+            if(!!request.body.newClassName) {
+                await ClassModel.updateClassName(classId, request.body.newClassName);
+            }
+
+            response.status(200).json({ message: 'Clase actualizada', classId: classId, imageVideo: thumbnail });
+        }
+        catch(err) {
+            console.log({err}, 'error aquí');
+            response.status(500).json({ message: 'La clase no se pudo actualizar' });
         }
     }
 

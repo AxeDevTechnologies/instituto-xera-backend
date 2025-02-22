@@ -5,6 +5,12 @@ export default class WorkshopModel {
         try {
             const workshopQuery: QuerySnapshot<DocumentData, DocumentData> = await getDocs(query(collection(db, 'Workshop'), where('userId', '==', teacherId)));
 
+            if(workshopQuery.empty) {
+                return {
+                    message: 'Todavía no hay talleres disponibles.',
+                }
+            }
+
             const userRef = doc(db, 'User', teacherId);
             const userSnap = await getDoc(userRef);
 

@@ -1,5 +1,5 @@
 import { db } from '../firebase/config';
-import { collection, getDocs, getDoc, addDoc, where, query, doc, or, QueryConstraint } from 'firebase/firestore';
+import { collection, getDocs, getDoc, addDoc, where, query, doc, or, QueryConstraint, updateDoc } from 'firebase/firestore';
 export default class ClassModel {
 
     public static async getClasses(institute?: string) {
@@ -37,7 +37,6 @@ export default class ClassModel {
 
     public static async getClassesForTeacher(teacherId: string) {
         try {
-            console.log(teacherId);
             const filters: QueryConstraint[] = [];
               
             filters.push(where('userId', '==', teacherId));
@@ -82,6 +81,32 @@ export default class ClassModel {
             });
 
             return response.id;
+        }
+        catch(err) {
+            console.log({err});
+            throw new Error(err as string);
+        }
+    }
+
+    public static async updateClassName(docId: string, newName: string) {  
+        try {
+            const classRef = doc(db, "Class", docId);  
+            await updateDoc(classRef, { className: newName });
+
+            return 'Clase actualizada';
+        }
+        catch(err) {
+            console.log({err});
+            throw new Error(err as string);
+        }
+    }
+
+    public static async updateImageClass(docId: string, thumbnail: string) {  
+        try {
+            const classRef = doc(db, "Class", docId);  
+            await updateDoc(classRef, { thumbnail: thumbnail });
+
+            return 'Clase actualizada';
         }
         catch(err) {
             console.log({err});
