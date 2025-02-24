@@ -1,5 +1,5 @@
 import { storage } from './config';
-import {ref, uploadBytes, getDownloadURL, StorageReference, deleteObject } from "firebase/storage";
+import {ref, uploadBytes, getDownloadURL, StorageReference, deleteObject, getMetadata } from "firebase/storage";
 
 export const uploadFile = async (name: string, file: Blob | Uint8Array | ArrayBuffer, contentType: string) => {
     try {
@@ -9,6 +9,17 @@ export const uploadFile = async (name: string, file: Blob | Uint8Array | ArrayBu
     }
     catch(err) {
         console.log({err},'++++++');
+    }
+}
+
+export const getFileMetadata = async(filePath: string): Promise<boolean> => {
+    try {
+        const fileRef = ref(storage, filePath);
+        await getMetadata(fileRef);
+        return true;
+    }
+    catch(err) {
+        return false;
     }
 }
 
@@ -41,7 +52,6 @@ export const deleteFile = async(filePath: string) => {
         await deleteObject(fileRef);
     }
     catch(err) {
-        console.log({err}, 'videoooooo');
         return 'Error al eliminar el archivo';
     }
 }

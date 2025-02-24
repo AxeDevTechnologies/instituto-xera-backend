@@ -1,5 +1,5 @@
 import { db } from '../firebase/config';
-import { collection, getDocs, getDoc, addDoc, where, query, doc, or, QueryConstraint, updateDoc } from 'firebase/firestore';
+import { collection, getDocs, getDoc, addDoc, where, query, doc, or, QueryConstraint, updateDoc, deleteDoc } from 'firebase/firestore';
 export default class ClassModel {
 
     public static async getClasses(institute?: string) {
@@ -88,11 +88,20 @@ export default class ClassModel {
         }
     }
 
-    public static async updateClassName(docId: string, newName: string) {  
+    public static async updateClass(docId: string, newName?: string, classType?: string) {  
         try {
-            const classRef = doc(db, "Class", docId);  
-            await updateDoc(classRef, { className: newName });
+            const classRef = doc(db, "Class", docId);
+            let updatedClass: { [key: string]: any } = {};
 
+            if(!!classType) {
+                updatedClass.classType = classType;
+            }
+
+            if(!!newName) {
+                updatedClass.className = newName;
+            }
+
+            await updateDoc(classRef, updatedClass);
             return 'Clase actualizada';
         }
         catch(err) {
@@ -110,6 +119,30 @@ export default class ClassModel {
         }
         catch(err) {
             console.log({err});
+            throw new Error(err as string);
+        }
+    }
+
+    public static async getClass(classId: string) {
+        try {
+            const docRef = doc(db, 'Class', classId);
+            const snapshot = await getDoc(docRef);
+
+            return snapshot.data()!;
+        }
+        catch(err) {
+            throw new Error(err as string);
+        }
+    }
+
+    public static async deleteClass(classId: string) {
+        try {
+            const classRef = doc(db, 'Class', classId);  
+            await deleteDoc(classRef);
+
+            return 'Clase eliminada';
+        }
+        catch(err) {
             throw new Error(err as string);
         }
     }

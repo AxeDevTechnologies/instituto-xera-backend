@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import ClassModel from '../model/ClassModel';
-import { uploadFile, getURLVideo, getImageVideo, deleteFile } from '../firebase/FirebaseStorage';
+import { uploadFile, getURLVideo, getImageVideo, deleteFile, getFileMetadata } from '../firebase/FirebaseStorage';
 
 export default class ClassController {
     public static async getAllClasses(request: Request, response: Response) {
@@ -69,8 +69,9 @@ export default class ClassController {
             const image = files['image'] ? files['image'][0] : null;
 
             const currentClassName: string = request.body.currentClassName;
-            const classId: string = request.body.classId;
+            const classId: string = request.params.classId;
             const currentName: string = !!request.body.newClassName ? request.body.newClassName : currentClassName;
+            const classType: string = !!request.body.classType ? request.body.classType : '';
 
             if(!!video) {
                 const videoContentType = video!.mimetype;
@@ -90,11 +91,11 @@ export default class ClassController {
                 await ClassModel.updateImageClass(classId, thumbnail);
             }
             
-            if(!!request.body.newClassName) {
-                await ClassModel.updateClassName(classId, request.body.newClassName);
+            if(!!request.body.newClassName || !!request.body.classType) {
+                await ClassModel.updateClass(classId, request.body.newClassName, classType);
             }
 
-            response.status(200).json({ message: 'Clase actualizada', classId: classId, imageVideo: thumbnail, className: currentName });
+            response.status(200).json({ message: 'Clase actualizada', imageVideo: thumbnail });
         }
         catch(err) {
             console.log({err}, 'error aquí');
@@ -116,6 +117,23 @@ export default class ClassController {
         try {
             const classVideo: string = await getImageVideo(request.query.className as string);
             response.status(200).json({ video: classVideo });
+        }
+        catch(err: any) {
+            response.status(500).json(err.message);
+        }
+    }
+
+    public static async deleteClass(request: Request, response: Response) {
+        try {
+            const className = await ClassModel.getClass(request.params.classId);
+            await deleteFile(`Class/${className.className}`);
+
+            if(await getFileMetadata(`Thumbnail/${className.className}`)) {
+                await deleteFile(`Thumbnail/${className.className}`);
+            }
+
+            const deletedClass: string = await ClassModel.deleteClass(request.params.classId);
+            response.status(200).json({ message: deletedClass });
         }
         catch(err: any) {
             response.status(500).json(err.message);
