@@ -45,7 +45,7 @@ export default class ClassController {
             uploadFile(`Class/${className}`, video!.buffer, videoContentType!);
 
             let thumbnail: string = '';
-            if (image) {
+            if (!!image) {
                 const imageContentType = image.mimetype;
                 await uploadFile(`Thumbnail/${className}`, image.buffer, imageContentType);
 
@@ -64,26 +64,24 @@ export default class ClassController {
 
     public static async editClass(request: Request, response: Response) {
         try {
-            console.log(request.body);
             const files = request.files as { [fieldname: string]: Express.Multer.File[] };
             const video = files['video'] ? files['video'][0] : null;
             const image = files['image'] ? files['image'][0] : null;
 
             const currentClassName: string = request.body.currentClassName;
             const classId: string = request.body.classId;
+            const currentName: string = !!request.body.newClassName ? request.body.newClassName : currentClassName;
 
             if(!!video) {
                 const videoContentType = video!.mimetype;
-                const currentName: string = !!request.body.newClassName ? request.body.newClassName : currentClassName;
 
                 await deleteFile(`Class/${currentClassName}`);
-                await uploadFile(`Class/${currentClassName}`, video!.buffer, videoContentType!);
+                await uploadFile(`Class/${currentName}`, video!.buffer, videoContentType!);
             }
 
             let thumbnail: string = '';
             if (!!image) {
                 const imageContentType = image.mimetype;
-                const currentName: string = !!request.body.newClassName ? request.body.newClassName : currentClassName;
 
                 await deleteFile(`Thumbnail/${currentClassName}`);
                 await uploadFile(`Thumbnail/${currentName}`, image.buffer, imageContentType);
@@ -96,7 +94,7 @@ export default class ClassController {
                 await ClassModel.updateClassName(classId, request.body.newClassName);
             }
 
-            response.status(200).json({ message: 'Clase actualizada', classId: classId, imageVideo: thumbnail });
+            response.status(200).json({ message: 'Clase actualizada', classId: classId, imageVideo: thumbnail, className: currentName });
         }
         catch(err) {
             console.log({err}, 'error aquí');

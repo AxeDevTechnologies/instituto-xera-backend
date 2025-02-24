@@ -3,7 +3,6 @@ import {ref, uploadBytes, getDownloadURL, StorageReference, deleteObject } from 
 
 export const uploadFile = async (name: string, file: Blob | Uint8Array | ArrayBuffer, contentType: string) => {
     try {
-        console.log({name});
         const storageRef = ref(storage, name);
         const metadata = {contentType};
         await uploadBytes(storageRef, file, metadata);
