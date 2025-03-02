@@ -26,18 +26,25 @@ export default class ClassController {
     }
 
     public static async createClass(request: Request, response: Response) {
+        console.log('al menos entra aquí');
         try {
             const files = request.files as { [fieldname: string]: Express.Multer.File[] };
             const video = files['video'] ? files['video'][0] : null;
             const image = files['image'] ? files['image'][0] : null;
 
-            const className = request.body.name;
-            const userId = request.body.userId;
-            const classType = request.body.classType;
-            const institute = request.body.institute;
+            const className: string = request.body.name;
+            const userId: string = request.body.userId;
+            const classType: string = request.body.classType;
+            const institute: string = request.body.institute;
 
             if(!video || !className) {
                 response.status(400).json({ message: 'Archivo y nombre son requeridos'});
+                return;
+            }
+
+            if(!await ClassModel.doesClassExist(className)) {
+                response.status(400).json({ message: 'Ese nombre ya existe. Use otro nombre'});
+                return;
             }
 
             const videoContentType = video!.mimetype;
@@ -53,6 +60,7 @@ export default class ClassController {
             }
 
             const classId: string = await ClassModel.createClass(className, userId, classType, institute, thumbnail);
+            console.log('llega hasta acá');
             
             response.status(200).json({ message: 'Clase creada correctamente', classId: classId, imageVideo: thumbnail });
         }
@@ -72,6 +80,10 @@ export default class ClassController {
             const classId: string = request.params.classId;
             const currentName: string = !!request.body.newClassName ? request.body.newClassName : currentClassName;
             const classType: string = !!request.body.classType ? request.body.classType : '';
+
+            if(!!request.body.newClassName && await ClassModel.doesClassExist(request.body.newClassName)) {
+                response.status(400).json({ message: 'Ese nombre ya existe. Use otro nombre'});
+            }
 
             if(!!video) {
                 const videoContentType = video!.mimetype;

@@ -69,7 +69,7 @@ export default class ClassModel {
         }
     }
 
-    public static async createClass(className: string, userId: number, classType: string, institute: string, thumbnail: string): Promise<string> {
+    public static async createClass(className: string, userId: string, classType: string, institute: string, thumbnail: string): Promise<string> {
         thumbnail = thumbnail === '' ? 'default' : thumbnail;
         try {
             const response = await addDoc(collection(db, "Class"), {
@@ -141,6 +141,19 @@ export default class ClassModel {
             await deleteDoc(classRef);
 
             return 'Clase eliminada';
+        }
+        catch(err) {
+            throw new Error(err as string);
+        }
+    }
+
+    public static async doesClassExist(className: string) {
+        try {
+            const classQuery = query(collection(db, 'Class'), where('className', '==', className));
+
+            const classSnap = await getDocs(classQuery);
+
+            return classSnap.empty
         }
         catch(err) {
             throw new Error(err as string);

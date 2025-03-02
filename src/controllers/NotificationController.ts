@@ -31,4 +31,16 @@ export default class NotificationController {
         //     response.status(500).json({ message: err });
         // }
     }
+
+    public static async sendEvent(request: Request, response: Response) {
+        response.setHeader("Content-Type", "text/event-stream");
+        response.setHeader("Cache-Control", "no-cache");
+        response.setHeader("Connection", "keep-alive");
+
+        const sendEvent = () => {
+            response.write('data: Hola mundo');
+        }
+
+        sendEvent();
+    }
 }

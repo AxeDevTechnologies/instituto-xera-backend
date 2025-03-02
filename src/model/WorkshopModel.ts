@@ -58,16 +58,20 @@ export default class WorkshopModel {
         }
     }
 
-    public static async createWorkshop(workshopName: string, userId: number): Promise<string> {
+    public static async createWorkshop(workshopName: string, price: number, institute: string, userId: string, thumbnail: string): Promise<string> {
         try {
-            await addDoc(collection(db, "Workshop"), {
+            const workshop = await addDoc(collection(db, "Workshop"), {
                 name: workshopName,
+                price: price,
+                institute: institute,
                 userId: userId,
+                thumbnail: thumbnail,
             });
 
-            return 'Taller creado exitósamente';
+            return workshop.id;
         }
         catch(err) {
+            console.log(err, 'err');
             throw new Error(err as string);
         }
     }
@@ -80,6 +84,44 @@ export default class WorkshopModel {
             });
 
             return 'Clase creada exitósamente';
+        }
+        catch(err) {
+            throw new Error(err as string);
+        }
+    }
+
+    public static async doesWorkshopExist(workshopName: string) {
+        try {
+            const workshopQuery = query(collection(db, 'Workshop'), where('name', '==', workshopName));
+
+            const workshopSnap = await getDocs(workshopQuery);
+
+            return workshopSnap.empty
+        }
+        catch(err) {
+            throw new Error(err as string);
+        }
+    }
+
+    public static async doesSubtopicExist(subtopicName: string) {
+        try {
+            const suptopicQuery = query(collection(db, 'Subtopic'), where('name', '==', subtopicName));
+
+            const subtopicSnap = await getDocs(suptopicQuery);
+
+            return subtopicSnap.empty
+        }
+        catch(err) {
+            throw new Error(err as string);
+        }
+    }
+
+    public static async getWorkshop(workshopId: string) {
+        try {
+            const docRef = doc(db, 'Workshop', workshopId);
+            const snapshot = await getDoc(docRef);
+
+            return snapshot.data()!;
         }
         catch(err) {
             throw new Error(err as string);
