@@ -5,7 +5,6 @@ import { deleteFile, getFileMetadata, getImageVideo, uploadFile } from '../fireb
 export default class ClassController {
     public static async getWorkshops(request: Request, response: Response) {
         try {
-            console.log('aquí sí entra');
             const workshops = await WorkshopModel.getWorkshops(request.query.teacherId as string);
 
             response.status(200).json(workshops);
@@ -50,9 +49,9 @@ export default class ClassController {
             if (!!image) {
                 const imageContentType = image.mimetype;
                 await uploadFile(`Thumbnail/${workshopName}`, image.buffer, imageContentType);
-
-                thumbnail = await getImageVideo(`Thumbnail/${workshopName}`) || 'default';
             }
+            
+            thumbnail = await getImageVideo(`Thumbnail/${workshopName}`) || 'default';
 
             const workshopId = await WorkshopModel.createWorkshop(workshopName, price, institute, userId, thumbnail);
             response.status(200).json({ message: 'Taller creado exitósamente', workshopId: workshopId, thumbnail: thumbnail });

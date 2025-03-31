@@ -22,7 +22,7 @@ export default class SubscriptionModel {
             return subscription;
         }
         catch (err) {
-            console.log(err);
+            console.log('el error es aquí', err);
             throw new Error(err as string);
         }
     }

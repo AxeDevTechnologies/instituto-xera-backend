@@ -15,11 +15,6 @@ router.post('/create-class', authenticateToken, upload.fields([
     { name: 'image', maxCount: 1 }
 ]), ClassController.createClass);
 
-router.patch('/edit-class/:classId', authenticateToken, upload.fields([
-    { name: 'video', maxCount: 1 },
-    { name: 'image', maxCount: 1 }
-]), ClassController.editClass);
-
 router.delete('/delete-class/:classId', authenticateToken, ClassController.deleteClass);
 
 export default router;

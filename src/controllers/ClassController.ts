@@ -26,7 +26,6 @@ export default class ClassController {
     }
 
     public static async createClass(request: Request, response: Response) {
-        console.log('al menos entra aquí');
         try {
             const files = request.files as { [fieldname: string]: Express.Multer.File[] };
             const video = files['video'] ? files['video'][0] : null;
@@ -55,63 +54,18 @@ export default class ClassController {
             if (!!image) {
                 const imageContentType = image.mimetype;
                 await uploadFile(`Thumbnail/${className}`, image.buffer, imageContentType);
-
-                thumbnail = await getImageVideo(`Thumbnail/${className}`) || 'default';
             }
 
+            const thumbnailImage = await getImageVideo(`Thumbnail/${className}`);
+            thumbnailImage === 'No hay imagen disponible' ? 'default' : thumbnailImage;
+
             const classId: string = await ClassModel.createClass(className, userId, classType, institute, thumbnail);
-            console.log('llega hasta acá');
             
             response.status(200).json({ message: 'Clase creada correctamente', classId: classId, imageVideo: thumbnail });
         }
         catch(err: any) {
             console.log('aquí está el error', err);
             response.status(500).json(err.message);
-        }
-    }
-
-    public static async editClass(request: Request, response: Response) {
-        try {
-            const files = request.files as { [fieldname: string]: Express.Multer.File[] };
-            const video = files['video'] ? files['video'][0] : null;
-            const image = files['image'] ? files['image'][0] : null;
-
-            const currentClassName: string = request.body.currentClassName;
-            const classId: string = request.params.classId;
-            const currentName: string = !!request.body.newClassName ? request.body.newClassName : currentClassName;
-            const classType: string = !!request.body.classType ? request.body.classType : '';
-
-            if(!!request.body.newClassName && await ClassModel.doesClassExist(request.body.newClassName)) {
-                response.status(400).json({ message: 'Ese nombre ya existe. Use otro nombre'});
-            }
-
-            if(!!video) {
-                const videoContentType = video!.mimetype;
-
-                await deleteFile(`Class/${currentClassName}`);
-                await uploadFile(`Class/${currentName}`, video!.buffer, videoContentType!);
-            }
-
-            let thumbnail: string = '';
-            if (!!image) {
-                const imageContentType = image.mimetype;
-
-                await deleteFile(`Thumbnail/${currentClassName}`);
-                await uploadFile(`Thumbnail/${currentName}`, image.buffer, imageContentType);
-
-                thumbnail = await getImageVideo(`Thumbnail/${currentName}`) || 'default';
-                await ClassModel.updateImageClass(classId, thumbnail);
-            }
-            
-            if(!!request.body.newClassName || !!request.body.classType) {
-                await ClassModel.updateClass(classId, request.body.newClassName, classType);
-            }
-
-            response.status(200).json({ message: 'Clase actualizada', imageVideo: thumbnail });
-        }
-        catch(err) {
-            console.log({err}, 'error aquí');
-            response.status(500).json({ message: 'La clase no se pudo actualizar' });
         }
     }
 

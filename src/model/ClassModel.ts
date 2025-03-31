@@ -88,41 +88,6 @@ export default class ClassModel {
         }
     }
 
-    public static async updateClass(docId: string, newName?: string, classType?: string) {  
-        try {
-            const classRef = doc(db, "Class", docId);
-            let updatedClass: { [key: string]: any } = {};
-
-            if(!!classType) {
-                updatedClass.classType = classType;
-            }
-
-            if(!!newName) {
-                updatedClass.className = newName;
-            }
-
-            await updateDoc(classRef, updatedClass);
-            return 'Clase actualizada';
-        }
-        catch(err) {
-            console.log({err});
-            throw new Error(err as string);
-        }
-    }
-
-    public static async updateImageClass(docId: string, thumbnail: string) {  
-        try {
-            const classRef = doc(db, "Class", docId);  
-            await updateDoc(classRef, { thumbnail: thumbnail });
-
-            return 'Clase actualizada';
-        }
-        catch(err) {
-            console.log({err});
-            throw new Error(err as string);
-        }
-    }
-
     public static async getClass(classId: string) {
         try {
             const docRef = doc(db, 'Class', classId);

@@ -1,8 +1,34 @@
 import { db } from '../firebase/config';
-import { collection, doc, getDocs, addDoc, getDoc, where, query, QuerySnapshot, DocumentData } from 'firebase/firestore';
+import { collection, doc, getDocs, addDoc, getDoc, where, query, QuerySnapshot, DocumentData, QueryConstraint } from 'firebase/firestore';
 export default class WorkshopModel {
-    public static async getWorkshops(teacherId: string) {
+    public static async getWorkshops(userId?: string) {
         try {
+            const workshopQuery: QuerySnapshot<DocumentData, DocumentData> = await getDocs(collection(db, 'Workshop'));
+
+            if(workshopQuery.empty) {
+                return {
+                    message: 'Todavía no hay talleres disponibles.',
+                }
+            }
+
+            const userRef = doc(db, 'User', userId!);
+            const userSnap = await getDoc(userRef);
+
+            const workshops: any[] = [];
+
+            workshopQuery.forEach((doc) => {
+                workshops.push({ id: doc.id, ...doc.data(), teacher: userSnap.data()!.name });
+            });
+
+            return workshops;
+        }
+        catch(err) {
+            throw new Error(err as string);
+        }
+    }
+
+    public static async getWorkshopsForTeachers(teacherId: string) {
+        try {            
             const workshopQuery: QuerySnapshot<DocumentData, DocumentData> = await getDocs(query(collection(db, 'Workshop'), where('userId', '==', teacherId)));
 
             if(workshopQuery.empty) {
@@ -26,6 +52,7 @@ export default class WorkshopModel {
             throw new Error(err as string);
         }
     }
+
     public static async getSubtopic(subtopicId: string) {
         try {
             const subtopic = await getDoc(doc(db, 'Subtopic', subtopicId));
@@ -43,7 +70,7 @@ export default class WorkshopModel {
 
     public static async getSubtopics(workshopId: string) {
         try {
-            const querySnapshot = await getDocs(collection(db, "Subtopic"));
+            const querySnapshot = await getDocs(query(collection(db, "Subtopic"), where('workshopId', '==', workshopId)));
 
             const subtopics: any[] = [];
 
