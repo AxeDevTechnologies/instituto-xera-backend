@@ -57,7 +57,7 @@ export default class ClassController {
             }
 
             const thumbnailImage = await getImageVideo(`Thumbnail/${className}`);
-            thumbnailImage === 'No hay imagen disponible' ? 'default' : thumbnailImage;
+            thumbnail = thumbnailImage === 'No hay imagen disponible' ? 'default' : thumbnailImage;
 
             const classId: string = await ClassModel.createClass(className, userId, classType, institute, thumbnail);
             

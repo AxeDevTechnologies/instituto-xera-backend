@@ -1,5 +1,7 @@
 import { db } from '../firebase/config';
-import { collection, doc, getDocs, addDoc, getDoc, where, query, QuerySnapshot, DocumentData, QueryConstraint } from 'firebase/firestore';
+import { stripe } from '../lib/Stripe';
+import { collection, doc, getDocs, addDoc, getDoc, where, query, QuerySnapshot, DocumentData } from 'firebase/firestore';
+import Stripe from 'stripe';
 export default class WorkshopModel {
     public static async getWorkshops(userId?: string) {
         try {
@@ -87,12 +89,15 @@ export default class WorkshopModel {
 
     public static async createWorkshop(workshopName: string, price: number, institute: string, userId: string, thumbnail: string): Promise<string> {
         try {
+            const workshopIdStripe = await WorkshopModel.createWorkshopForStripe(workshopName, price);
             const workshop = await addDoc(collection(db, "Workshop"), {
                 name: workshopName,
                 price: price,
                 institute: institute,
                 userId: userId,
                 thumbnail: thumbnail,
+                workshopIdStripe: workshopIdStripe.productId,
+                priceId: workshopIdStripe.priceId
             });
 
             return workshop.id;
@@ -100,6 +105,33 @@ export default class WorkshopModel {
         catch(err) {
             console.log(err, 'err');
             throw new Error(err as string);
+        }
+    }
+
+    public static async createWorkshopForStripe(workshopName: string, precio: number,) {
+        console.log('llega aquí');
+
+        try {
+            // Crear producto
+            const product = await stripe.products.create({
+                name: workshopName,
+            });
+
+            // Crear precio asociado
+            const price = await stripe.prices.create({
+                unit_amount: precio,
+                currency: 'mxn',
+                product: product.id,
+            });
+
+            return {
+                productId: product.id,
+                priceId: price.id,
+            };
+        }
+        catch (error) {
+            console.error('Error creando producto y precio en Stripe:', error);
+            throw error;
         }
     }
 

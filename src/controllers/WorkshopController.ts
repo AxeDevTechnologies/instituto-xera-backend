@@ -50,7 +50,6 @@ export default class ClassController {
                 const imageContentType = image.mimetype;
                 await uploadFile(`Thumbnail/${workshopName}`, image.buffer, imageContentType);
             }
-            
             thumbnail = await getImageVideo(`Thumbnail/${workshopName}`) || 'default';
 
             const workshopId = await WorkshopModel.createWorkshop(workshopName, price, institute, userId, thumbnail);
@@ -58,13 +57,12 @@ export default class ClassController {
         }
 
         catch(err: any) {
+            console.log({err});
             response.status(500).json(err.message);
-            console.log(err);
         }
     }
 
     public static async createSubTopic(request: Request, response: Response) {
-        console.log('entra aquí');
         try {
             const files = request.files as { [fieldname: string]: Express.Multer.File[] };
             const video = files['video'] ? files['video'][0] : null;
@@ -74,12 +72,10 @@ export default class ClassController {
                 response.status(400).json({ message: 'Archivo y nombre son requeridos'});
                 return;
             }
-            console.log('pasa acá');
 
             if(!await WorkshopModel.doesSubtopicExist(name)) {
                 response.status(400).json({ message: 'Ese nombre ya existe.' });
             }
-            console.log('también acá');
 
             const contentType = video?.mimetype;
 

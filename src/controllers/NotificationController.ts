@@ -4,8 +4,7 @@ import SubscriptionModel from '../model/SubscriptionModel';
 export default class NotificationController {
     //! *****************WEBHOOKS***************** \\
     public static async webhooks(request: Request, response: Response) {
-        console.log(request.body.data, '\n', request.body.data.object, '\n', request.body);
-        if(request.body.type === 'checkout.session.completed') {
+        if(request.body.type === 'invoice.payment_succeeded') {
             const subscriptionId: string = request.body.data.object.subscription;
             const customerId: string = request.body.data.object.customer;
 

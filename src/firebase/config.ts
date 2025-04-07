@@ -4,12 +4,12 @@ import { getFirestore } from 'firebase/firestore'
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-    apiKey: "AIzaSyALwMgd2UMZJ4AjtNBQPzDLPrhMAZAs0Vc",
+    apiKey: "AIzaSyDhbWQr3u3ilLhgm_G-TYUB-paWTFqDR6A",
     authDomain: "institutoxeravideos.firebaseapp.com",
     projectId: "institutoxeravideos",
     storageBucket: "institutoxeravideos.firebasestorage.app",
     messagingSenderId: "158505016529",
-    appId: "1:158505016529:web:f9b692201db92565b239f0"
+    appId: "1:158505016529:web:227e20e1c0e975c4b239f0"
 };
 initializeApp(firebaseConfig);
 const storage = getStorage();

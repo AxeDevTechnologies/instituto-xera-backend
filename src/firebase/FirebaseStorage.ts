@@ -42,6 +42,7 @@ export const getImageVideo = async (videoName: string): Promise<string> => {
         return url;
     }
     catch(err) {
+        console.log({err});
         return 'No hay imagen disponible';
     }
 }
