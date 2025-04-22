@@ -48,7 +48,7 @@ export default class ClassController {
 
             const videoContentType = video!.mimetype;
 
-            uploadFile(`Class/${className}`, video!.buffer, videoContentType!);
+            await uploadFile(`Class/${className}`, video!.buffer, videoContentType!);
 
             let thumbnail: string = '';
             if (!!image) {

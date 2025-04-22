@@ -16,8 +16,8 @@ export default class SubscriptionModel {
                 }],
                 mode: 'subscription',
                 customer: customerID,
-                success_url: 'https://190a-2806-2f0-53e0-44d1-9bca-2669-abdf-ac3b.ngrok-free.app/success-subscription',
-                cancel_url: 'https://190a-2806-2f0-53e0-44d1-9bca-2669-abdf-ac3b.ngrok-free.app/failed-subscription'
+                success_url: 'https://1312-177-242-220-113.ngrok-free.app/classes',
+                cancel_url: 'https://1312-177-242-220-113.ngrok-free.app'
             });
             return subscription;
         }

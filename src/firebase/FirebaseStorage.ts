@@ -5,7 +5,7 @@ export const uploadFile = async (name: string, file: Blob | Uint8Array | ArrayBu
     try {
         const storageRef = ref(storage, name);
         const metadata = {contentType};
-        await uploadBytes(storageRef, file, metadata);
+        const response = await uploadBytes(storageRef, file, metadata);
     }
     catch(err) {
         console.log({err},'++++++');

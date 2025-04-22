@@ -3,6 +3,7 @@ import { collection, getDocs, getDoc, addDoc, where, query, doc, or, QueryConstr
 export default class ClassModel {
 
     public static async getClasses(institute?: string) {
+        console.log({institute});
         try {
             const filters: QueryConstraint[] = [];
               
@@ -36,6 +37,7 @@ export default class ClassModel {
     }
 
     public static async getClassesForTeacher(teacherId: string) {
+        console.log({teacherId});
         try {
             const filters: QueryConstraint[] = [];
               

@@ -8,10 +8,11 @@ import Class from './routes/Class';
 import Workshop from './routes/Workshop';
 import Subscription from './routes/Subscriptions';
 import Notification from './routes/Notification';
+import Store from './routes/Store';
 
 const app = express();
 app.use(cors({
-    origin: 'http://localhost:8080',
+    origin: 'https://localhost:8080',
 }));
 
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -23,6 +24,7 @@ app.use(Workshop);
 app.use('/auth', Authentication);
 app.use(Subscription);
 app.use('/webhook', Notification);
+app.use(Store);
 
 app.use((req, res) => {
     res.status(404).send('<h1>Page not found!</h1>');

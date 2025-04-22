@@ -1,11 +1,40 @@
 import { db } from '../firebase/config';
 import { stripe } from '../lib/Stripe';
-import { collection, doc, getDocs, addDoc, getDoc, where, query, QuerySnapshot, DocumentData } from 'firebase/firestore';
-import Stripe from 'stripe';
+import { collection, doc, getDocs, addDoc, getDoc, where, query, QuerySnapshot, DocumentData, QueryConstraint } from 'firebase/firestore';
 export default class WorkshopModel {
+    public static async createBuyWorkshop(workshopPriceId: string, customerId: string) {
+        try {
+            const session = await stripe.checkout.sessions.create({
+                payment_method_types: ['card'],
+                line_items: [
+                    {
+                        price: workshopPriceId,
+                        quantity: 1,
+                    },
+                ],
+                mode: 'payment',
+                customer: customerId,
+                success_url: 'https://1312-177-242-220-113.ngrok-free.app/workshop',
+                cancel_url: 'https://1312-177-242-220-113.ngrok-free.app'
+            });
+
+            return session;
+        }
+        catch(err) {
+            console.log('el error es aquí', err);
+            throw new Error(err as string);
+        }
+    }
+
     public static async getWorkshops(userId?: string) {
         try {
-            const workshopQuery: QuerySnapshot<DocumentData, DocumentData> = await getDocs(collection(db, 'Workshop'));
+
+            const filters: QueryConstraint[] = []; 
+            if(userId !== '') {
+                filters.push(where('userId', '==', userId));
+            }
+
+            const workshopQuery: QuerySnapshot<DocumentData, DocumentData> = await getDocs(query(collection(db, 'Workshop'), ...filters));
 
             if(workshopQuery.empty) {
                 return {
@@ -13,13 +42,16 @@ export default class WorkshopModel {
                 }
             }
 
-            const userRef = doc(db, 'User', userId!);
-            const userSnap = await getDoc(userRef);
+            let userSnap = null
+            if(userId !== '') {
+                const userRef = doc(db, 'User', userId!);
+                userSnap = await getDoc(userRef);
+            }
 
             const workshops: any[] = [];
 
             workshopQuery.forEach((doc) => {
-                workshops.push({ id: doc.id, ...doc.data(), teacher: userSnap.data()!.name });
+                workshops.push({ id: doc.id, ...doc.data(), teacher: userSnap?.data()?.name || '' });
             });
 
             return workshops;
@@ -109,8 +141,6 @@ export default class WorkshopModel {
     }
 
     public static async createWorkshopForStripe(workshopName: string, precio: number,) {
-        console.log('llega aquí');
-
         try {
             // Crear producto
             const product = await stripe.products.create({
@@ -119,7 +149,7 @@ export default class WorkshopModel {
 
             // Crear precio asociado
             const price = await stripe.prices.create({
-                unit_amount: precio,
+                unit_amount: Math.round(precio * 100),
                 currency: 'mxn',
                 product: product.id,
             });

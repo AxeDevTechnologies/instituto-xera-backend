@@ -3,9 +3,21 @@ import WorkshopModel from '../model/WorkshopModel';
 import { deleteFile, getFileMetadata, getImageVideo, uploadFile } from '../firebase/FirebaseStorage';
 
 export default class ClassController {
+    public static async buyWorksop(request: Request, response: Response) {
+        try {
+            console.log(request.body);
+            const workshop = await WorkshopModel.createBuyWorkshop(request.body.workshopPriceId, request.body.customerId);
+
+            response.status(200).json(workshop);
+        }
+        catch(err) {
+            response.status(500).json({ message: err });
+        }
+    }
+
     public static async getWorkshops(request: Request, response: Response) {
         try {
-            const workshops = await WorkshopModel.getWorkshops(request.query.teacherId as string);
+            const workshops = await WorkshopModel.getWorkshops(request.query.teacherId as string || '');
 
             response.status(200).json(workshops);
         }
@@ -13,6 +25,7 @@ export default class ClassController {
             response.status(500).json(err);
         }
     }
+
     public static async getSubtopic(request: Request, response: Response) {
         try {
             const subtopic = await WorkshopModel.getSubtopic(request.body.subtopicId);
