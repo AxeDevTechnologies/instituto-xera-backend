@@ -33,4 +33,16 @@ export default class UserController {
             response.status(500).json(err.message);
         }
     }
+    
+    public static async toggleScholarship(request: Request, response: Response) {
+        const { userId, institute, action, teacherId } = request.body
+        try {
+            const scholarship = await UserModel.toggleScholarship(userId, institute, action, teacherId);
+
+            response.status(200).json(scholarship);
+        } catch (err) {
+            console.error('Error en toggleScholarship:', err);
+            throw new Error(typeof err === 'string' ? err : 'Error al procesar beca');
+        }
+    }
 }

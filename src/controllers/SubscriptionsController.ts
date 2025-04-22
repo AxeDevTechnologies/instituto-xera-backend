@@ -92,4 +92,14 @@ export default class SubscriptionsController {
             response.status(500).json({ message: err });
         }
     }
+
+    public static async cancelSubscription(request: Request, response: Response) {
+        try {
+            const cancel = await SubscriptionModel.cancelSubscription(request.body.subscriptionId);
+            response.status(200).json({ message: 'Suscripción cancelada exitósamente' });
+        }
+        catch(err) {
+            response.status(500).json({ message: err });
+        }
+    }
 }

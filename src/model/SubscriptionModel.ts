@@ -126,26 +126,56 @@ export default class SubscriptionModel {
         try {
             const userRef = collection(db, 'User');
             const queryUser = query(userRef, where('stripeId', '==', customerId));
-
             const querySnapshot = await getDocs(queryUser);
-
-            if(!querySnapshot.empty) {
-                await updateDoc(querySnapshot.docs[0].ref, {
-                    membership: {
-                        institute: institute,
-                        initDate: initDate,
-                        dueDate: dueDate,
-                        status: status
-                    },
-                });
-
+          
+            if (!querySnapshot.empty) {
+                const userDoc = querySnapshot.docs[0];
+                const userData = userDoc.data();
+                
+                // Nueva membresía a añadir/actualizar
+                const newMembership = {
+                    instituteId: institute, // Cambiado a instituteId para consistencia
+                    initDate: initDate,
+                    dueDate: dueDate,
+                    status: status,
+                    paymentStatus: 'paid', // Valor por defecto
+                };
+            
+                // Si ya existe el array de membresías
+                if (userData.memberships) {
+                // Buscar si ya existe membresía para este instituto
+                    const existingIndex = userData.memberships.findIndex(
+                        (m: any) => m.instituteId === institute
+                    );
+                
+                    if (existingIndex >= 0) {
+                        // Actualizar membresía existente
+                        const updatedMemberships = [...userData.memberships];
+                        updatedMemberships[existingIndex] = newMembership;
+                        
+                        await updateDoc(userDoc.ref, {
+                        memberships: updatedMemberships
+                        });
+                    }
+                    else {
+                        // Añadir nueva membresía
+                        await updateDoc(userDoc.ref, {
+                            memberships: [...userData.memberships, newMembership]
+                        });
+                    }
+                }
+                else {
+                    await updateDoc(userDoc.ref, {
+                        memberships: [newMembership]
+                    });
+                }
             }
             else {
                 throw new Error('Usuario no existente');
             }
-        }
+        } 
         catch (err) {
-            throw new Error(err as string);
+            throw new Error(typeof err === 'string' ? err : 'Error desconocido');
         }
     }
 
@@ -175,6 +205,16 @@ export default class SubscriptionModel {
         }
         catch (err) {
             throw new Error(err as string);
+        }
+    }
+
+    //? CANCELAR UNA SUSCRIPCIÓN
+    public static async cancelSubscription(subscriptionId: string) {
+        try {
+            const subscription = await stripe.subscriptions.cancel('sub_1MlPf9LkdIwHu7ixB6VIYRyX');
+        }
+        catch(err) {
+
         }
     }
 }

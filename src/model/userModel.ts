@@ -1,5 +1,5 @@
 import { db } from '../firebase/config';
-import { collection, getDocs, addDoc, query, where } from 'firebase/firestore';
+import { collection, getDocs, addDoc, query, where, doc, getDoc, DocumentData, DocumentReference, updateDoc } from 'firebase/firestore';
 import SubscriptionModel from './SubscriptionModel';
 
 export default class UserModel {
@@ -19,6 +19,22 @@ export default class UserModel {
         catch(err) {
             console.log(err);
             throw new Error(err as string);
+        }
+    }
+
+    public static async getUserById(userId: string) {
+        try {
+            const userDocRef = doc(db, 'User', userId);
+            const userDoc = await getDoc(userDocRef);
+
+            if (!userDoc.exists()) {
+                return '';
+            }
+
+            return userDoc;
+        }
+        catch(err) {
+
         }
     }
 
@@ -73,6 +89,74 @@ export default class UserModel {
         }
         catch(err) {
             throw new Error(err as string);
+        }
+    }
+
+    public static async toggleScholarship(userId: string, institute: string, action: 'grant' | 'revoke', teacherId: string) {
+        try {
+            const userDocRef = doc(db, 'User', userId);
+            const userDoc = await getDoc(userDocRef);
+    
+            if (!userDoc.exists()) {
+                throw new Error('Usuario no encontrado');
+            }
+    
+            const currentData = userDoc.data();
+            const currentScholarships = currentData.scholarships || [];
+            
+            const scholarshipIndex = currentScholarships.findIndex(
+                (s: any) => s.institute === institute
+            );
+    
+            const newScholarship = {
+                institute,
+                status: action === 'grant' ? 'active' : 'inactive',
+                teacherId
+            };
+    
+            let updatedScholarships = [];
+            
+            if(scholarshipIndex >= 0) {
+                updatedScholarships = [...currentScholarships];
+                updatedScholarships[scholarshipIndex] = newScholarship;
+            }
+            else {
+                if(action === 'grant') {
+                    updatedScholarships = [...currentScholarships, newScholarship];
+                }
+                else {
+                    throw new Error('No existe beca para revocar');
+                }
+            }
+    
+            updateDoc(userDocRef, {
+                scholarships: updatedScholarships
+            });
+    
+            // if (currentData.memberships) {
+            //     const membershipIndex = currentData.memberships.findIndex(
+            //         (m: any) => m.institute === institute
+            //     );
+    
+            //     if (membershipIndex >= 0) {
+            //         const updatedMemberships = [...currentData.memberships];
+            //         updatedMemberships[membershipIndex].paymentStatus = 
+            //             action === 'grant' ? 'waived' : 'pending';
+                    
+            //         updateDoc(userDocRef, {
+            //             memberships: updatedMemberships
+            //         });
+            //     }
+            // }
+    
+            return { 
+                success: true,
+                action: action === 'grant' ? 'Beca completa concedida' : 'Beca revocada'
+            };
+            
+        } catch (err) {
+            console.error('Error en toggleScholarship:', err);
+            throw new Error(typeof err === 'string' ? err : 'Error al procesar beca');
         }
     }
 }
