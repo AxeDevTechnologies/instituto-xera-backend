@@ -1,10 +1,11 @@
+import Stripe from 'stripe';
 import { db } from '../firebase/config';
 import { stripe } from '../lib/Stripe';
 import { collection, doc, getDocs, addDoc, getDoc, where, query, QuerySnapshot, DocumentData, QueryConstraint } from 'firebase/firestore';
 export default class WorkshopModel {
-    public static async createBuyWorkshop(workshopPriceId: string, customerId: string) {
+    public static async createBuyWorkshop(workshopPriceId: string, customerId: string, workshopId: string) {
         try {
-            const session = await stripe.checkout.sessions.create({
+            const sessionObject: Stripe.Checkout.SessionCreateParams = {
                 payment_method_types: ['card'],
                 line_items: [
                     {
@@ -14,14 +15,19 @@ export default class WorkshopModel {
                 ],
                 mode: 'payment',
                 customer: customerId,
-                success_url: 'https://1312-177-242-220-113.ngrok-free.app/workshop',
-                cancel_url: 'https://1312-177-242-220-113.ngrok-free.app'
-            });
+                metadata: {
+                    workshopId: workshopId,
+                    customerId: customerId,
+                    workshopPriceId: workshopPriceId
+                },
+                success_url: 'https://76b9-2806-2f0-53e0-a14-8288-86ad-e3a6-d106.ngrok-free.app/workshop',
+                cancel_url: 'https://76b9-2806-2f0-53e0-a14-8288-86ad-e3a6-d106.ngrok-free.app'
+            }
+            const session = await stripe.checkout.sessions.create(sessionObject);
 
             return session;
         }
         catch(err) {
-            console.log('el error es aquí', err);
             throw new Error(err as string);
         }
     }
@@ -132,6 +138,14 @@ export default class WorkshopModel {
                 priceId: workshopIdStripe.priceId
             });
 
+            const metadata = {
+                workshopId: workshop.id,
+                customerId: userId,
+                priceId: workshopIdStripe.priceId
+            }
+
+            await this.updateWorkshopForStripe(metadata, workshopIdStripe.productId)
+
             return workshop.id;
         }
         catch(err) {
@@ -158,6 +172,21 @@ export default class WorkshopModel {
                 productId: product.id,
                 priceId: price.id,
             };
+        }
+        catch (error) {
+            console.error('Error creando producto y precio en Stripe:', error);
+            throw error;
+        }
+    }
+
+    public static async updateWorkshopForStripe(newData: any, productId: string) {
+        try {
+            // Crear producto
+            const product = await stripe.products.update(productId,
+                {
+                    metadata: newData,
+                },
+            );
         }
         catch (error) {
             console.error('Error creando producto y precio en Stripe:', error);

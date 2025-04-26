@@ -18,7 +18,6 @@ export default class StoreController {
         const image = files['image'] ? files['image'][0] : null;
 
         const { productName, price, institute, userId } = request.body;
-        console.log(request.body);
 
         try {
             let thumbnail: string = '';

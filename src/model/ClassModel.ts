@@ -2,42 +2,51 @@ import { db } from '../firebase/config';
 import { collection, getDocs, getDoc, addDoc, where, query, doc, or, QueryConstraint, updateDoc, deleteDoc } from 'firebase/firestore';
 export default class ClassModel {
 
-    public static async getClasses(institute?: string) {
-        console.log({institute});
-        try {
-            const filters: QueryConstraint[] = [];
-              
-            if(institute !== '') {
-                filters.push(where('institute', '==', institute));
+    public static async getClasses(institutes?: string[]) {
+    try {
+        const filters: QueryConstraint[] = [];
+        
+        // Filtro para institutes (array)
+        if (institutes && institutes.length > 0) {
+            for(const institute of institutes) {
+                filters.push(where('institute', '==', institutes));
             }
+            // Si hay múltiples institutes, usamos 'in' para comparar con el array
+        }
 
-            else {
-                filters.push(where('classType', '==', 'Gratuita'));
-            }
+        // Filtro fijo para classType
+        filters.push(where('classType', '==', 'Gratuita'));
 
-            const classQuery = query(collection(db, 'Class'), ...filters);
+        // Crear la consulta
+        const classQuery = query(collection(db, 'Class'), ...filters);
+        const classResult = await getDocs(classQuery);
 
-            const classResult = await getDocs(classQuery);
 
-            const userRef = doc(db, 'User', classResult.docs[0].data().userId);
-            const userSnap = await getDoc(userRef);
-
-            const classes: any[] = [];
-
-                classResult.forEach((doc) => {
-                    classes.push({ id: doc.id, ...doc.data(), username: userSnap.data()!.name });
+        // Obtener clases con datos de usuario
+        const classes: any[] = [];
+        
+        // Usamos Promise.all para manejar las llamadas a usuarios en paralelo
+        await Promise.all(
+            classResult.docs.map(async (user) => {
+                const userRef = doc(db, 'User', user.data().userId);
+                const userSnap = await getDoc(userRef);
+                
+                classes.push({ 
+                    id: user.id, 
+                    ...user.data(), 
+                    username: userSnap.data()?.name || 'Nombre no disponible'
                 });
+            }),
+        );
 
-            return classes;
-        }
-
-        catch(err) {
-            throw new Error(err as string);
-        }
+        return classes;
+    } catch (err) {
+        console.log({err});
+        throw new Error(err as string);
     }
+}
 
     public static async getClassesForTeacher(teacherId: string) {
-        console.log({teacherId});
         try {
             const filters: QueryConstraint[] = [];
               

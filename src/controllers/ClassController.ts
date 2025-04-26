@@ -5,7 +5,9 @@ import { uploadFile, getURLVideo, getImageVideo, deleteFile, getFileMetadata } f
 export default class ClassController {
     public static async getAllClasses(request: Request, response: Response) {
         try {
-            const classes = await ClassModel.getClasses(request.query.institute as string || '');
+            const institutes = request.query.institutes as string[] || [];
+
+            const classes = await ClassModel.getClasses(institutes);
 
             response.status(200).json(classes);
         }

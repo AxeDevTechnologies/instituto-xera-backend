@@ -17,7 +17,7 @@ router.post('/create-workshop', authenticateToken, upload.fields([
 router.post('/create-subtopic', authenticateToken, upload.fields([
     { name: 'video', maxCount: 1},
 ]), WorkshopController.createSubTopic);
-router.post('/buy-workshop', WorkshopController.buyWorksop);
+router.post('/create-checkout-session-workshop', WorkshopController.buyWorksop);
 
 router.delete('/delete-workshop/:workshopId', authenticateToken, WorkshopController.deleteWorkshop);
 

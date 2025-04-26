@@ -5,8 +5,7 @@ import { deleteFile, getFileMetadata, getImageVideo, uploadFile } from '../fireb
 export default class ClassController {
     public static async buyWorksop(request: Request, response: Response) {
         try {
-            console.log(request.body);
-            const workshop = await WorkshopModel.createBuyWorkshop(request.body.workshopPriceId, request.body.customerId);
+            const workshop = await WorkshopModel.createBuyWorkshop(request.body.workshopPriceId, request.body.customerId, request.body.workshopId);
 
             response.status(200).json(workshop);
         }

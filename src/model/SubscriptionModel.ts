@@ -1,6 +1,6 @@
 import { stripe } from '../lib/Stripe';
 import { db } from '../firebase/config';
-import { collection, getDocs, query, where, updateDoc } from 'firebase/firestore';
+import { collection, getDocs, query, where, updateDoc, doc } from 'firebase/firestore';
 import Stripe from 'stripe';
 
 export default class SubscriptionModel {
@@ -132,24 +132,20 @@ export default class SubscriptionModel {
                 const userDoc = querySnapshot.docs[0];
                 const userData = userDoc.data();
                 
-                // Nueva membresía a añadir/actualizar
                 const newMembership = {
-                    instituteId: institute, // Cambiado a instituteId para consistencia
+                    instituteId: institute,
                     initDate: initDate,
                     dueDate: dueDate,
                     status: status,
-                    paymentStatus: 'paid', // Valor por defecto
+                    paymentStatus: 'paid',
                 };
             
-                // Si ya existe el array de membresías
                 if (userData.memberships) {
-                // Buscar si ya existe membresía para este instituto
                     const existingIndex = userData.memberships.findIndex(
                         (m: any) => m.instituteId === institute
                     );
                 
                     if (existingIndex >= 0) {
-                        // Actualizar membresía existente
                         const updatedMemberships = [...userData.memberships];
                         updatedMemberships[existingIndex] = newMembership;
                         
@@ -158,7 +154,6 @@ export default class SubscriptionModel {
                         });
                     }
                     else {
-                        // Añadir nueva membresía
                         await updateDoc(userDoc.ref, {
                             memberships: [...userData.memberships, newMembership]
                         });
@@ -212,6 +207,50 @@ export default class SubscriptionModel {
     public static async cancelSubscription(subscriptionId: string) {
         try {
             const subscription = await stripe.subscriptions.cancel('sub_1MlPf9LkdIwHu7ixB6VIYRyX');
+        }
+        catch(err) {
+
+        }
+    }
+
+    //! MOVER A ALGO DE SOLAMENTE STRIPE
+    public static async retrieveWorkshopPayment(paymentId: string) {
+        try {
+            const paymentIntent = await stripe.paymentIntents.retrieve(paymentId);
+            return paymentIntent;
+        }
+        catch(err) {
+
+        }
+    }
+
+    public static async createUpdateWorkshopBuy(newWorkshop: any, customerId: string) {
+        try {
+            //! ESTO DE OBTENER EL USUARIO TAMBIÉN HACERLO GENERAL PARA QUE LO USEN VARIOS
+            const userRef = collection(db, 'User');
+            const queryUser = query(userRef, where('stripeId', '==', customerId));
+            const userSnap = await getDocs(queryUser);
+
+            if (!userSnap.empty) {
+                // Actualizar el array de talleres
+                const userDoc = userSnap.docs[0]
+                const userData = userDoc.data();
+
+                // Referencia al documento específico
+                const userDocRef = doc(db, 'User', userDoc.id); 
+
+                await updateDoc(userDocRef, {
+                    workshops: userData.workshops 
+                        ? [...userData.workshops, newWorkshop] 
+                        : [newWorkshop]
+                });
+
+                return 'Taller comprado exitósamente'
+                
+            }
+            else {
+                console.error(`Usuario no encontrado`);
+            }
         }
         catch(err) {
 
