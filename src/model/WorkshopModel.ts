@@ -1,7 +1,7 @@
 import Stripe from 'stripe';
 import { db } from '../firebase/config';
 import { stripe } from '../lib/Stripe';
-import { collection, doc, getDocs, addDoc, getDoc, where, query, QuerySnapshot, DocumentData, QueryConstraint } from 'firebase/firestore';
+import { collection, doc, getDocs, addDoc, getDoc, where, query, QuerySnapshot, DocumentData, QueryConstraint, deleteDoc } from 'firebase/firestore';
 export default class WorkshopModel {
     public static async createBuyWorkshop(workshopPriceId: string, customerId: string, workshopId: string) {
         try {
@@ -240,6 +240,18 @@ export default class WorkshopModel {
             const snapshot = await getDoc(docRef);
 
             return snapshot.data()!;
+        }
+        catch(err) {
+            throw new Error(err as string);
+        }
+    }
+
+    public static async removeSubtopic(subtopicId: string) {
+        try {
+            const subtopicRef = doc(db, 'Subtopic', subtopicId);  
+            await deleteDoc(subtopicRef);
+
+            return 'Subtema eliminado';
         }
         catch(err) {
             throw new Error(err as string);

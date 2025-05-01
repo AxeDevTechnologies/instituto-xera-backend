@@ -21,4 +21,8 @@ router.post('/create-checkout-session-workshop', WorkshopController.buyWorksop);
 
 router.delete('/delete-workshop/:workshopId', authenticateToken, WorkshopController.deleteWorkshop);
 
+router.delete('/subtopic/:id', authenticateToken, WorkshopController.deleteSubtopic);
+
+router.get('/video/subtopic', authenticateToken, WorkshopController.getURLSubtopic);
+
 export default router;

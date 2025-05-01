@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import WorkshopModel from '../model/WorkshopModel';
-import { deleteFile, getFileMetadata, getImageVideo, uploadFile } from '../firebase/FirebaseStorage';
+import { deleteFile, getFileMetadata, getImageVideo, getURLVideo, uploadFile } from '../firebase/FirebaseStorage';
 
 export default class ClassController {
     public static async buyWorksop(request: Request, response: Response) {
@@ -79,6 +79,7 @@ export default class ClassController {
             const files = request.files as { [fieldname: string]: Express.Multer.File[] };
             const video = files['video'] ? files['video'][0] : null;
             const name = request.body.name;
+            const workshop = await WorkshopModel.getWorkshop(request.body.workshopId);
 
             if(!video || !name) {
                 response.status(400).json({ message: 'Archivo y nombre son requeridos'});
@@ -91,7 +92,7 @@ export default class ClassController {
 
             const contentType = video?.mimetype;
 
-            uploadFile(`Workshop/Subtopic/${request.body.workshopName}/${name}`, video!.buffer, contentType!);
+            uploadFile(`Workshop/Subtopic/${workshop.name}/${name}`, video!.buffer, contentType!);
 
             WorkshopModel.createSubTopic(name, request.body.workshopId);
             response.status(200).json({ message: 'Subtema guardado exitósamente '});
@@ -112,6 +113,30 @@ export default class ClassController {
 
             // const deletedClass: string = await ClassModel.deleteClass(request.params.classId);
             // response.status(200).json({ message: deletedClass });
+        }
+        catch(err: any) {
+            response.status(500).json(err.message);
+        }
+    }
+
+    public static async deleteSubtopic(request: Request, response: Response) {
+        try {
+            const subtopic = await WorkshopModel.getSubtopic(request.params.id);
+            const workshop = await WorkshopModel.getWorkshop(subtopic.workshopId);
+            await deleteFile(`Workshop/${workshop.name}/${subtopic.name}`);
+
+            const deletedClass: string = await WorkshopModel.removeSubtopic(request.params.id);
+            response.status(200).json({ message: deletedClass });
+        }
+        catch(err: any) {
+            response.status(500).json(err.message);
+        }
+    }
+
+    public static async getURLSubtopic(request: Request, response: Response) {
+        try {
+            const video: string = await getURLVideo(request.query.path as string);
+            response.status(200).json({ video: video });
         }
         catch(err: any) {
             response.status(500).json(err.message);
