@@ -92,7 +92,7 @@ export default class ClassController {
 
             const contentType = video?.mimetype;
 
-            uploadFile(`Workshop/Subtopic/${workshop.name}/${name}`, video!.buffer, contentType!);
+            uploadFile(`Workshop/${workshop.name}/${name}`, video!.buffer, contentType!);
 
             WorkshopModel.createSubTopic(name, request.body.workshopId);
             response.status(200).json({ message: 'Subtema guardado exitósamente '});
